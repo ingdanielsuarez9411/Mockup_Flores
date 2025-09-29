@@ -1,1545 +1,492 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calculadora de Costos - Canales Digitales con IA</title>
-    
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
-    
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" xintegrity="sha384-QWTKZyjpPEpePjyICTVT3hMbQv9hdZ9eNbN3/gI7w3kYCVkqwLN9avMvaNMaPd/EKr" crossorigin="anonymous">
-    
-    <!-- Favicon -->
-    <link rel="icon" type="image/svg+xml" id="favicon" href="data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3e%3ccircle cx='50' cy='50' r='40' fill='%23d4af37'/%3e%3ctext x='50' y='60' text-anchor='middle' fill='%23fff' font-size='30' font-weight='bold'%3e1%3c/text%3e%3c/svg%3e">
-    
-    <!-- Custom Styles -->
-    <style>
-        :root {
-            --primary-gold: #d4af37;
-            --dark-blue: #2c3e50;
-            --light-gray: #f8f9fa;
-            --dark-text: #343a40;
-        }
-
-        body {
-            font-family: 'Montserrat', sans-serif;
-            background-color: var(--light-gray);
-            color: var(--dark-text);
-            padding-top: 70px; /* To offset the fixed navbar */
-        }
-
-        .navbar {
-            background-color: var(--dark-blue) !important;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        }
-
-        .navbar-brand {
-            color: var(--primary-gold) !important;
-            font-weight: 700;
-            font-size: 1.4rem;
-        }
-        
-        .navbar-nav .nav-link {
-            color: rgba(255, 255, 255, 0.7);
-            font-weight: 600;
-            transition: color 0.3s ease;
-            padding: 0.5rem 1rem;
-        }
-
-        .navbar-nav .nav-link.active,
-        .navbar-nav .nav-link:hover {
-            color: var(--primary-gold);
-        }
-
-        .progress-container {
-            width: 30%;
-            min-width: 200px;
-        }
-
-        .progress {
-            height: 8px;
-            background-color: rgba(255, 255, 255, 0.2);
-        }
-
-        .progress-bar {
-            background-color: var(--primary-gold);
-            transition: width 0.4s ease-in-out;
-        }
-
-        .main-content {
-            padding: 2.5rem 1.5rem;
-        }
-
-        .module {
-            background-color: #ffffff;
-            border-radius: 12px;
-            padding: 2rem;
-            margin-bottom: 2rem;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
-            border: 1px solid #e9ecef;
-            display: none;
-            animation: fadeInUp 0.5s ease-in-out;
-        }
-
-        .module.active {
-            display: block;
-        }
-
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .module-title {
-            color: var(--dark-blue);
-            font-size: 2rem;
-            font-weight: 700;
-            margin-bottom: 1.5rem;
-            border-bottom: 3px solid var(--primary-gold);
-            padding-bottom: 0.75rem;
-            display: inline-block;
-        }
-
-        .form-check-input:checked {
-            background-color: var(--primary-gold);
-            border-color: var(--primary-gold);
-        }
-        
-        .form-control:focus, .form-select:focus {
-            border-color: var(--primary-gold);
-            box-shadow: 0 0 0 0.25rem rgba(212, 175, 55, 0.25);
-        }
-
-        .btn-gold {
-            background-color: var(--primary-gold);
-            border-color: var(--primary-gold);
-            color: #fff;
-            font-weight: 600;
-            transition: all 0.3s ease;
-        }
-
-        .btn-gold:hover {
-            background-color: #b8941f;
-            border-color: #b8941f;
-            color: #fff;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        }
-        
-        .btn-outline-gold {
-            color: var(--primary-gold);
-            border-color: var(--primary-gold);
-            font-weight: 600;
-        }
-        .btn-outline-gold:hover {
-            background-color: var(--primary-gold);
-            border-color: var(--primary-gold);
-            color: #fff;
-        }
-
-        .cost-display {
-            font-weight: 700;
-            color: var(--primary-gold);
-        }
-
-        .table thead th {
-            background-color: var(--dark-blue);
-            color: #fff;
-        }
-
-        .implementation-card {
-            border: 2px solid #e9ecef;
-            border-radius: 12px;
-            transition: all 0.3s ease;
-            cursor: pointer;
-        }
-
-        .implementation-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
-        }
-        
-        .implementation-card.selected {
-            border-color: var(--primary-gold);
-            box-shadow: 0 8px 24px rgba(212, 175, 55, 0.25);
-        }
-
-        .implementation-header {
-            padding: 1rem;
-            border-bottom: 1px solid #e9ecef;
-        }
-        
-        .implementation-header h3 { font-size: 1.25rem; font-weight: 700; color: var(--dark-text); }
-        .implementation-header .implementation-subtitle { font-size: 0.9rem; color: #6c757d; }
-
-        .implementation-price {
-            font-size: 2rem;
-            font-weight: 700;
-            color: var(--primary-gold);
-        }
-
-        .feature-item::before {
-            content: '✓';
-            color: var(--primary-gold);
-            margin-right: 10px;
-            font-weight: bold;
-        }
-        
-        .summary-section {
-            background-color: #fff;
-            padding: 2rem;
-            border-radius: 12px;
-            margin-bottom: 2rem;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
-        }
-
-        .summary-section h4 {
-            color: var(--dark-blue);
-            font-size: 1.5rem;
-            font-weight: 700;
-        }
-        
-        .summary-table .total-row {
-            background-color: var(--dark-blue);
-            color: #fff;
-            font-weight: bold;
-        }
-        .summary-table .total-row .cost-display {
-            color: var(--primary-gold) !important;
-        }
-
-        .grand-total-section {
-            background: linear-gradient(135deg, var(--dark-blue), #1c2833);
-            color: #fff;
-            padding: 2.5rem;
-            border-radius: 12px;
-            text-align: center;
-        }
-        
-        .grand-total-section h4 { color: #fff; }
-        .grand-total-section .display-4 { color: var(--primary-gold); }
-
-    </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Inventario de Flores — Mockup</title>
+<style>
+  :root{
+    --bg:#0f172a; /* slate-900 */
+    --panel:#111827; /* gray-900 */
+    --muted:#1f2937; /* gray-800 */
+    --card:#0b1220; /* custom */
+    --primary:#22d3ee; /* cyan-400 */
+    --accent:#a78bfa; /* violet-400 */
+    --ok:#34d399; /* green-400 */
+    --warn:#f59e0b; /* amber-500 */
+    --danger:#ef4444; /* red-500 */
+    --text:#e5e7eb; /* gray-200 */
+    --sub:#9ca3af; /* gray-400 */
+    --border:#1f2937;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{margin:0;background:linear-gradient(180deg,var(--bg),#0a1222);color:var(--text);font:14px/1.45 system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",Arial}
+  .app{display:grid;grid-template-rows:auto 1fr;min-height:100vh}
+  header{display:flex;align-items:center;gap:16px;padding:14px 18px;border-bottom:1px solid var(--border);backdrop-filter:blur(6px);position:sticky;top:0;background:rgba(10,18,34,.75)}
+  header h1{font-size:18px;margin:0 8px 0 0;letter-spacing:.3px}
+  .tag{padding:4px 8px;border:1px solid var(--border);border-radius:999px;color:var(--sub)}
+  .tabs{display:flex;gap:8px;margin-left:auto}
+  .tab{border:1px solid var(--border);background:var(--panel);color:var(--sub);padding:8px 12px;border-radius:12px;cursor:pointer}
+  .tab.active{background:linear-gradient(180deg,var(--panel),#0b1326);color:var(--text);border-color:#263042}
+  main{padding:18px;}
+  .grid{display:grid;gap:14px}
+  .grid.cols-4{grid-template-columns:repeat(4,1fr)}
+  .grid.cols-3{grid-template-columns:repeat(3,1fr)}
+  .grid.cols-2{grid-template-columns:repeat(2,1fr)}
+  @media (max-width:1200px){.grid.cols-4{grid-template-columns:repeat(2,1fr)}}
+  @media (max-width:800px){.grid.cols-3,.grid.cols-2{grid-template-columns:1fr}}
+  .card{background:linear-gradient(180deg,var(--panel),#0b1326);border:1px solid var(--border);border-radius:16px;box-shadow:0 10px 30px rgba(0,0,0,.25)}
+  .card .head{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border-bottom:1px solid var(--border)}
+  .card .body{padding:14px}
+  .kpi{display:flex;align-items:center;gap:12px}
+  .kpi .dot{width:8px;height:8px;border-radius:50%}
+  .kpi .value{font-size:24px;font-weight:700}
+  .muted{color:var(--sub)}
+  .row{display:flex;gap:8px;flex-wrap:wrap}
+  input,select,button{background:#0b1220;color:var(--text);border:1px solid #223047;border-radius:10px;padding:8px 10px}
+  input::placeholder{color:#6b7280}
+  button.primary{background:linear-gradient(180deg,#19304e,#0c233f);border-color:#26415e}
+  button.good{background:linear-gradient(180deg,#103924,#0b2b1b);border-color:#1c4b33}
+  table{width:100%;border-collapse:collapse}
+  th,td{border-bottom:1px solid #1e2a3d;padding:8px;text-align:left}
+  th{color:#a5b4fc}
+  tr:hover{background:#0b162a}
+  .pill{padding:4px 8px;border-radius:999px;border:1px solid #21324a;color:#a7f3d0;background:#0b1f1a}
+  .pill.warn{border-color:#3a2a12;background:#1f160a;color:#fde68a}
+  .pill.bad{border-color:#3a1919;background:#1f0b0b;color:#fecaca}
+  .legend{display:flex;gap:10px;flex-wrap:wrap}
+  .legend .item{display:flex;align-items:center;gap:6px}
+  .legend .sw{width:10px;height:10px;border-radius:2px}
+  .rack{display:grid;grid-template-columns:repeat(6,1fr);gap:8px}
+  .slot{background:#0b1220;border:1px dashed #243349;border-radius:10px;min-height:64px;display:flex;align-items:center;justify-content:center;color:#9aa7bd;position:relative}
+  .slot .badge{position:absolute;top:6px;left:6px;font-size:10px;color:#9aa7bd}
+  .slot.oldest{outline:2px solid var(--warn)}
+  .slot.risk{outline:2px solid var(--danger)}
+  .toolbar{display:flex;gap:8px;align-items:center;margin-bottom:10px}
+  .statusbar{display:flex;gap:12px;align-items:center;color:var(--sub);font-size:12px}
+  .route{display:flex;flex-direction:column;gap:6px}
+  .route .step{padding:8px;border:1px solid #243349;border-radius:10px;background:#0b1220}
+  .toast{position:fixed;right:16px;bottom:16px;background:#0b1220;border:1px solid #21324a;padding:12px 14px;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,.35);display:none}
+</style>
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
-        <div class="container-fluid">
-            <a class="navbar-brand" href="#">Calculadora de Costos</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                    <!-- Nav links will be dynamically controlled by JS -->
-                </ul>
-                <div class="d-flex align-items-center progress-container">
-                    <div class="progress w-100">
-                        <div class="progress-bar" id="progressFill" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </nav>
-
-    <div class="container-fluid main-content">
-        <!-- MÓDULO 0 -->
-        <div class="module active" id="module0">
-            <h2 class="module-title">1. Selección de Producto</h2>
-            <p class="mb-3 text-muted">Por favor, seleccione qué producto(s) desea cotizar:</p>
-            <div class="form-check mb-2">
-                <input class="form-check-input" type="checkbox" id="includeMindX" checked onchange="handleProductSelection()">
-                <label class="form-check-label" for="includeMindX">
-                    MINDX (Canales Digitales con IA)
-                </label>
-            </div>
-            <div class="form-check mb-2">
-                <input class="form-check-input" type="checkbox" id="includeFive9" onchange="handleProductSelection()">
-                <label class="form-check-label" for="includeFive9">
-                    Five9
-                </label>
-            </div>
-
-            <div id="five9Details" class="mt-4 p-3 bg-light border border-warning rounded" style="display: none;">
-                <h3 class="mb-3">Configuración Five9</h3>
-                <div class="table-responsive">
-                    <table class="table table-striped table-bordered">
-                        <thead class="table-dark">
-                            <tr>
-                                <th>Concepto</th>
-                                <th>Valor Unitario USD</th>
-                                <th>Cantidad</th>
-                                <th>Costo Mensual</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>VCC Agent Seat - Blended</td>
-                                <td class="cost-display">$60.89</td>
-                                <td><input type="number" class="form-control" id="five9Agents" min="0" value="0" oninput="calculateFive9Costs()"></td>
-                                <td class="cost-display" id="five9AgentsCost">$0.00</td>
-                            </tr>
-                            <tr>
-                                <td>VCC Supervisor</td>
-                                <td class="cost-display">$60.89</td>
-                                <td><input type="number" class="form-control" id="five9Supervisors" min="0" value="0" oninput="calculateFive9Costs()"></td>
-                                <td class="cost-display" id="five9SupervisorsCost">$0.00</td>
-                            </tr>
-                            <tr>
-                                <td>VCC Administrator</td>
-                                <td class="cost-display">$60.89</td>
-                                <td><input type="number" class="form-control" id="five9Admins" min="0" value="0" oninput="calculateFive9Costs()"></td>
-                                <td class="cost-display" id="five9AdminsCost">$0.00</td>
-                            </tr>
-                            <tr>
-                                <td>Chat Agent</td>
-                                <td class="cost-display">$3.38</td>
-                                <td><input type="number" class="form-control" id="five9ChatAgent" min="0" value="0" oninput="calculateFive9Costs()"></td>
-                                <td class="cost-display" id="five9ChatAgentCost">$0.00</td>
-                            </tr>
-                            <tr>
-                                <td>Email Agent</td>
-                                <td class="cost-display">$3.38</td>
-                                <td><input type="number" class="form-control" id="five9EmailAgent" min="0" value="0" oninput="calculateFive9Costs()"></td>
-                                <td class="cost-display" id="five9EmailAgentCost">$0.00</td>
-                            </tr>
-                            <tr>
-                                <td>NCX1 Voice + Email + Adv. Chat</td>
-                                <td class="cost-display">$67.66</td>
-                                <td><input type="number" class="form-control" id="five9NCX1" min="0" value="0" oninput="calculateFive9Costs()"></td>
-                                <td class="cost-display" id="five9NCX1Cost">$0.00</td>
-                            </tr>
-                            <tr>
-                                <td>SIP Inbound Flat Rate</td>
-                                <td class="cost-display">$101.49</td>
-                                <td><input type="number" class="form-control" id="five9SIPInbound" min="1" value="1" oninput="calculateFive9Costs()" readonly></td>
-                                <td class="cost-display" id="five9SIPInboundCost">$0.00</td>
-                            </tr>
-                            <tr>
-                                <td>SIP Outbound (No Backup)</td>
-                                <td class="cost-display">$101.49</td>
-                                <td><input type="number" class="form-control" id="five9SIPOutbound" min="1" value="1" oninput="calculateFive9Costs()" readonly></td>
-                                <td class="cost-display" id="five9SIPOutboundCost">$0.00</td>
-                            </tr>
-                            <tr>
-                                <td>VCC Recording Storage - 2 Months</td>
-                                <td class="cost-display">$0.95</td>
-                                <td><input type="number" class="form-control" id="five9RecStorage" min="0" value="0" oninput="calculateFive9Costs()"></td>
-                                <td class="cost-display" id="five9RecStorageCost">$0.00</td>
-                            </tr>
-                            <tr>
-                                <td>VCC Call Log Storage - 3 Months</td>
-                                <td class="cost-display">$0.51</td>
-                                <td><input type="number" class="form-control" id="five9CallLogStorage" min="0" value="0" oninput="calculateFive9Costs()"></td>
-                                <td class="cost-display" id="five9CallLogStorageCost">$0.00</td>
-                            </tr>
-                            <tr>
-                                <td>Salesforce Adapter</td>
-                                <td class="cost-display">$10.15</td>
-                                <td><input type="number" class="form-control" id="five9Salesforce" min="0" value="0" oninput="calculateFive9Costs()"></td>
-                                <td class="cost-display" id="five9SalesforceCost">$0.00</td>
-                            </tr>
-                            <tr>
-                                <td>Five9 UC Adapter - MS Teams / Zoom</td>
-                                <td class="cost-display">$10.15</td>
-                                <td><input type="number" class="form-control" id="five9UCAdapter" min="0" value="0" oninput="calculateFive9Costs()"></td>
-                                <td class="cost-display" id="five9UCAdapterCost">$0.00</td>
-                            </tr>
-                            <tr>
-                                <td>Agent Assist Standard</td>
-                                <td class="cost-display">$50.74</td>
-                                <td><input type="number" class="form-control" id="five9AgentAssist" min="0" value="0" oninput="calculateFive9Costs()"></td>
-                                <td class="cost-display" id="five9AgentAssistCost">$0.00</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-                <div class="text-end mt-3">
-                    <strong>Subtotal Five9 (Mensual): <span class="cost-display" id="five9Subtotal">$0.00 USD</span></strong>
-                </div>
-            </div>
-        </div>
-
-        <!-- MÓDULO 1 -->
-        <div class="module" id="module1">
-            <h2 class="module-title">2. Selección de Canales Digitales</h2>
-            <p class="mb-3 text-muted">El primer canal seleccionado es <strong class="cost-display">gratuito</strong>. Canales adicionales tienen un costo de <strong class="cost-display">USD $100 mensual</strong> cada uno.</p>
-            <div class="table-responsive">
-                <table class="table table-hover table-bordered">
-                    <thead class="table-dark">
-                        <tr>
-                            <th>Seleccionar</th>
-                            <th>Canal</th>
-                            <th>Costo Mensual (USD)</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td><input type="checkbox" class="form-check-input" id="whatsapp" onchange="calculateChannelCosts()"></td>
-                            <td>WhatsApp</td>
-                            <td class="cost-display" data-cost="100">$100.00</td>
-                        </tr>
-                        <tr>
-                            <td><input type="checkbox" class="form-check-input" id="telegram" onchange="calculateChannelCosts()"></td>
-                            <td>Telegram</td>
-                            <td class="cost-display" data-cost="100">$100.00</td>
-                        </tr>
-                        <tr>
-                            <td><input type="checkbox" class="form-check-input" id="facebook" onchange="calculateChannelCosts()"></td>
-                            <td>Facebook Messenger</td>
-                            <td class="cost-display" data-cost="100">$100.00</td>
-                        </tr>
-                        <tr>
-                            <td><input type="checkbox" class="form-check-input" id="instagram" onchange="calculateChannelCosts()"></td>
-                            <td>Instagram Direct Message</td>
-                            <td class="cost-display" data-cost="100">$100.00</td>
-                        </tr>
-                        <tr>
-                            <td><input type="checkbox" class="form-check-input" id="webchat" onchange="calculateChannelCosts()"></td>
-                            <td>WebChat (Widget o Embebido)</td>
-                            <td class="cost-display" data-cost="100">$100.00</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-            <div class="text-end mt-3">
-                <strong>Subtotal Canales (Mensual): <span class="cost-display" id="channelSubtotal">$0.00 USD</span></strong>
-            </div>
-        </div>
-
-        <!-- MÓDULO 2 -->
-        <div class="module" id="module2">
-            <h2 class="module-title">3. Paquetes de Conversaciones</h2>
-            <p class="mb-3 text-muted">Seleccione el paquete que mejor se adapte a sus necesidades. <strong>Incluye licencias de Dashboards de MINDX.</strong></p>
-            <div class="table-responsive">
-                <table class="table table-hover table-bordered">
-                    <thead class="table-dark">
-                        <tr>
-                            <th>Seleccionar</th>
-                            <th>Paquete</th>
-                            <th>Conversaciones</th>
-                            <th>Licencias Dashboards de MINDX</th>
-                            <th>Precio (USD)</th>
-                            <th>Conv. Adicional (USD)</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td><input type="radio" class="form-check-input" name="package" value="3500-283-1-0.075-Básico" onchange="calculatePackageCosts()"></td>
-                            <td>Básico</td><td>3,500</td><td class="cost-display">1</td><td class="cost-display">$283.00</td><td class="cost-display">$0.075</td>
-                        </tr>
-                        <tr>
-                            <td><input type="radio" class="form-check-input" name="package" value="5500-343-1-0.059-Estándar" onchange="calculatePackageCosts()"></td>
-                            <td>Estándar</td><td>5,500</td><td class="cost-display">1</td><td class="cost-display">$343.00</td><td class="cost-display">$0.059</td>
-                        </tr>
-                        <tr>
-                            <td><input type="radio" class="form-check-input" name="package" value="8500-453-2-0.049-Profesional" onchange="calculatePackageCosts()"></td>
-                            <td>Profesional</td><td>8,500</td><td class="cost-display">2</td><td class="cost-display">$453.00</td><td class="cost-display">$0.049</td>
-                        </tr>
-                         <tr>
-                            <td><input type="radio" class="form-check-input" name="package" value="10000-510-2-0.047-Empresarial" onchange="calculatePackageCosts()"></td>
-                            <td>Empresarial</td><td>10,000</td><td class="cost-display">2</td><td class="cost-display">$510.00</td><td class="cost-display">$0.047</td>
-                        </tr>
-                        <tr>
-                            <td><input type="radio" class="form-check-input" name="package" value="30000-1428-2-0.046-Corporativo I" onchange="calculatePackageCosts()"></td>
-                            <td>Corporativo I</td><td>30,000</td><td class="cost-display">2</td><td class="cost-display">$1,428.00</td><td class="cost-display">$0.046</td>
-                        </tr>
-                        <tr>
-                            <td><input type="radio" class="form-check-input" name="package" value="60000-2747-2-0.045-Corporativo II" onchange="calculatePackageCosts()"></td>
-                            <td>Corporativo II</td><td>60,000</td><td class="cost-display">2</td><td class="cost-display">$2,747.00</td><td class="cost-display">$0.045</td>
-                        </tr>
-                         <tr>
-                            <td><input type="radio" class="form-check-input" name="package" value="90000-3996-2-0.044-Corporativo III" onchange="calculatePackageCosts()"></td>
-                            <td>Corporativo III</td><td>90,000</td><td class="cost-display">2</td><td class="cost-display">$3,996.00</td><td class="cost-display">$0.044</td>
-                        </tr>
-                        <tr>
-                            <td><input type="radio" class="form-check-input" name="package" value="120000-5176-2-0.043-Enterprise I" onchange="calculatePackageCosts()"></td>
-                            <td>Enterprise I</td><td>120,000</td><td class="cost-display">2</td><td class="cost-display">$5,176.00</td><td class="cost-display">$0.043</td>
-                        </tr>
-                         <tr>
-                            <td><input type="radio" class="form-check-input" name="package" value="150000-6287-2-0.042-Enterprise II" onchange="calculatePackageCosts()"></td>
-                            <td>Enterprise II</td><td>150,000</td><td class="cost-display">2</td><td class="cost-display">$6,287.00</td><td class="cost-display">$0.042</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-            <div class="input-group mt-3">
-                <label class="input-group-text" for="additionalConversations">Conversaciones Adicionales (fuera de paquete):</label>
-                <input type="number" class="form-control" id="additionalConversations" min="0" value="0" oninput="calculatePackageCosts()">
-            </div>
-            <div class="text-end mt-3">
-                <strong>Subtotal Paquete (Mensual): <span class="cost-display" id="packageSubtotal">$0.00 USD</span></strong>
-            </div>
-        </div>
-
-        <!-- MÓDULO 3 -->
-        <div class="module" id="module3">
-            <h2 class="module-title">4. Licencias Adicionales Dashboards de MINDX</h2>
-            <p class="mb-3 text-muted">Su paquete incluye <strong class="cost-display" id="includedLicenses">0</strong> licencias. Puede agregar más por <strong class="cost-display">USD $20</strong> c/u (mensual).</p>
-            <div class="input-group mb-3">
-                <label class="input-group-text" for="additionalInsights">Licencias adicionales de Dashboards de MINDX:</label>
-                <input type="number" class="form-control" id="additionalInsights" min="0" value="0" oninput="calculateInsightsCosts()">
-            </div>
-            <div class="text-end mt-3">
-                <strong>Subtotal Dashboards de MINDX Adicionales (Mensual): <span class="cost-display" id="insightsSubtotal">$0.00 USD</span></strong>
-            </div>
-        </div>
-
-        <!-- MÓDULO 4 -->
-        <div class="module" id="module4">
-            <h2 class="module-title">5. Licencias de Agentes MindX</h2>
-            <p class="mb-3 text-muted">Licencias para atención humana. Cada una tiene un costo de <strong class="cost-display">$20 USD</strong> mensual.</p>
-            <div class="input-group mb-3">
-                <label class="input-group-text" for="agentLicenses">Cantidad de licencias de Agentes MindX:</label>
-                <input type="number" class="form-control" id="agentLicenses" min="0" value="0" oninput="calculateAgentCosts()">
-            </div>
-            <div id="five9AgentNote" class="alert alert-info mt-3" style="display: none;">
-                <strong>Nota Importante:</strong> Si su propuesta incluye <strong>Five9</strong>, no es necesario que los agentes adquieran licencias adicionales de Agente MINDX. Las interacciones de chat para los agentes se gestionarán directamente dentro de la plataforma Five9, optimizando su operación y costos. Las licencias de Five9 ya cubren esta funcionalidad.
-            </div>
-            <div class="text-end mt-3">
-                <strong>Subtotal Agentes (Mensual): <span class="cost-display" id="agentsSubtotal">$0.00 USD</span></strong>
-            </div>
-        </div>
-        
-        <!-- MÓDULO 5 -->
-        <div class="module" id="module5">
-            <h2 class="module-title">6. Inteligencia Artificial Generativa</h2>
-            <div class="form-check mb-3">
-                <input type="checkbox" class="form-check-input" id="includeAI" onchange="toggleAISection()">
-                <label class="form-check-label" for="includeAI">¿Desea incluir IA Generativa en su solución?</label>
-            </div>
-            <div id="aiDetails" style="display: none;">
-                <p class="mb-3 text-muted">Configure los parámetros para estimar el costo de la IA. El costo final dependerá del consumo real.</p>
-
-                <div class="bg-light border border-secondary rounded p-3 mb-4">
-                    <h3 class="text-center text-secondary mb-3">📋 Modelo de Precios IA Generativa</h3>
-                    <div class="row row-cols-1 row-cols-md-2 g-3 mb-3">
-                        <div class="col">
-                            <div class="card text-center h-100">
-                                <div class="card-body">
-                                    <h5 class="card-title text-secondary">Carga de Información</h5>
-                                    <p class="card-text display-6 cost-display">$0.093</p>
-                                    <p class="card-text"><small class="text-muted">por MB (Pago Único)</small></p>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col">
-                            <div class="card text-center h-100">
-                                <div class="card-body">
-                                    <h5 class="card-title text-secondary">Almacenamiento</h5>
-                                    <p class="card-text display-6 cost-display">$0.1</p>
-                                    <p class="card-text"><small class="text-muted">por GB/Día</small></p>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col">
-                            <div class="card text-center h-100">
-                                <div class="card-body">
-                                    <h5 class="card-title text-secondary">Consumo por Tokens</h5>
-                                    <p class="card-text display-6 cost-display">$6.3</p>
-                                    <p class="card-text"><small class="text-muted">por 1 Millón de Tokens</small></p>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col">
-                            <div class="card text-center h-100">
-                                <div class="card-body">
-                                    <h5 class="card-title text-secondary">Consumo por Mensajes</h5>
-                                    <p class="card-text display-6 cost-display">$111</p>
-                                    <p class="card-text"><small class="text-muted">por 20,000 Mensajes</small></p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="border rounded p-3">
-                    <h3 class="text-secondary mb-3 fs-5">⚙️ Configuración de su Proyecto</h3>
-                    
-                    <div class="mb-4">
-                        <h4 class="text-secondary fs-6">📚 Base de Conocimiento</h4>
-                        <div class="input-group mb-2">
-                            <label class="input-group-text" for="fileSize">Tamaño del archivo (MB):</label>
-                            <input type="number" class="form-control" id="fileSize" min="1" step="1" value="100" oninput="calculateAICosts()">
-                        </div>
-                        <div class="input-group">
-                            <label class="input-group-text" for="updateFrequency">Frecuencia de actualización:</label>
-                            <select class="form-select" id="updateFrequency" onchange="calculateAICosts()">
-                                <option value="12">Mensual</option>
-                                <option value="4">Trimestral</option>
-                                <option value="2">Semestral</option>
-                                <option value="1">Anual</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div class="mb-4">
-                        <h4 class="text-secondary fs-6">💰 Modelo de Facturación</h4>
-                        <div class="input-group">
-                             <label class="input-group-text" for="billingModel">Facturar por:</label>
-                            <select class="form-select" id="billingModel" onchange="toggleBillingModel()">
-                                <option value="messages">Mensajes (Más Simple)</option>
-                                <option value="tokens">Tokens (Más Preciso)</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div id="messagesModel">
-                        <h4 class="text-secondary fs-6">📱 Estimación por Mensajes</h4>
-                        <div class="input-group">
-                             <label class="input-group-text" for="aiMessagesMsg">Mensajes IA / Conversación:</label>
-                            <input type="number" class="form-control" id="aiMessagesMsg" min="1" value="3" oninput="calculateAICosts()">
-                        </div>
-                    </div>
-
-                    <div id="tokensModel" style="display: none;">
-                        <h4 class="text-secondary fs-6">🎯 Estimación por Tokens</h4>
-                        <div class="input-group mb-2">
-                            <label class="input-group-text" for="aiMessagesTokens">Mensajes IA / Conversación:</label>
-                            <input type="number" class="form-control" id="aiMessagesTokens" min="1" value="3" oninput="calculateAICosts()">
-                        </div>
-                        <div class="input-group">
-                            <label class="input-group-text" for="tokensPerMessage">Tokens / Mensaje:</label>
-                            <input type="number" class="form-control" id="tokensPerMessage" min="100" value="350" step="50" oninput="calculateAICosts()">
-                        </div>
-                    </div>
-                </div>
-
-                <div class="bg-dark text-white rounded p-3 mt-4">
-                    <h4 class="text-center cost-display mb-3">📊 Resumen de Costos Estimados de IA</h4>
-                    <div class="row text-center">
-                        <div class="col-md-4">
-                            <div class="fs-6 text-muted">Conversaciones IA/mes</div>
-                            <div class="fs-4 fw-bold" id="aiConversationsEstimate">0</div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="fs-6 text-muted">Mensajes IA/mes</div>
-                            <div class="fs-4 fw-bold" id="aiMessagesEstimate">0</div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="fs-6 text-muted" id="consumptionLabel">Consumo estimado</div>
-                            <div class="fs-4 fw-bold" id="consumptionEstimate">0</div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="text-end mt-3">
-                    <div class="mb-1"><strong>💾 Carga IA (Pago Inicial): <span class="cost-display" id="aiLoadingSubtotal">$0.00 USD</span></strong></div>
-                    <div class="mb-1"><strong>🗄️ Almacenamiento (Mensual): <span class="cost-display" id="aiStorageSubtotal">$0.00 USD</span></strong></div>
-                    <div class="mb-1"><strong>⚡ Consumo IA (Mensual): <span class="cost-display" id="aiUsageSubtotal">$0.00 USD</span></strong></div>
-                    <hr>
-                    <div class="fs-5"><strong>🤖 Total IA (Mensual): <span class="cost-display" id="aiMonthlySubtotal">$0.00 USD</span></strong></div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- MÓDULO 6 -->
-        <div class="module" id="module6">
-            <h2 class="module-title">7. Notificaciones Outbound de WhatsApp</h2>
-            <p class="mb-3 text-muted">Estime la cantidad de mensajes salientes (plantillas) por mes.</p>
-            <div class="table-responsive">
-                <table class="table table-bordered">
-                    <thead class="table-dark">
-                        <tr>
-                            <th>Tipo de Plantilla</th>
-                            <th>Valor/Notificación (USD)</th>
-                            <th>Cantidad Mensual</th>
-                            <th>Costo Mensual (USD)</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>Marketing</td>
-                            <td class="cost-display">$0.0150</td>
-                            <td><input type="number" class="form-control" id="notifMarketingQty" min="0" value="0" oninput="calculateNotificationCosts()"></td>
-                            <td class="cost-display" id="notifMarketingCost">$0.00</td>
-                        </tr>
-                        <tr>
-                            <td>Utility</td>
-                            <td class="cost-display">$0.0024</td>
-                            <td><input type="number" class="form-control" id="notifUtilityQty" min="0" value="0" oninput="calculateNotificationCosts()"></td>
-                            <td class="cost-display" id="notifUtilityCost">$0.00</td>
-                        </tr>
-                        <tr>
-                            <td>Authentication</td>
-                            <td class="cost-display">$0.0092</td>
-                            <td><input type="number" class="form-control" id="notifAuthenticationQty" min="0" value="0" oninput="calculateNotificationCosts()"></td>
-                            <td class="cost-display" id="notifAuthenticationCost">$0.00</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-            <div class="text-end mt-3">
-                <strong>Subtotal Notificaciones (Mensual): <span class="cost-display" id="notificationSubtotal">$0.00 USD</span></strong>
-            </div>
-        </div>
-
-        <!-- MÓDULO 7 -->
-        <div class="module" id="module7">
-            <h2 class="module-title">8. Servicios de Implementación y Hardware</h2>
-            
-            <div class="input-group mb-4">
-                <label class="input-group-text" for="trm">Tasa de Cambio (TRM) de Referencia (COP/USD):</label>
-                <input type="number" class="form-control" id="trm" value="4200" step="50" oninput="calculateSBCCosts()">
-            </div>
-
-            <div id="five9ImplementationSection" style="display: none;" class="mb-4 p-3 bg-light border rounded">
-                <h3 class="fs-5">Servicios Profesionales Five9</h3>
-                <div class="table-responsive">
-                    <table class="table table-bordered">
-                         <thead class="table-dark">
-                            <tr>
-                                <th>Concepto</th>
-                                <th>Valor USD (Pago Único)</th>
-                                <th>Incluir</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>Instalación y Configuración Five9</td>
-                                <td class="cost-display">$4,500.00</td>
-                                <td>
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" id="includeFive9Services" checked disabled>
-                                    </div>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <h3 class="fs-5">Servicios Profesionales MINDX</h3>
-            <p class="text-muted small">Elija un paquete de implementación para el diseño y desarrollo de sus flujos conversacionales (Pago Único).</p>
-            <div class="alert alert-info small">
-                <strong>Nota:</strong> Los paquetes de implementación son acumulativos. Es decir, el <strong>Tipo B</strong> incluye todo lo del Tipo A, y el <strong>Tipo C</strong> incluye todo lo del Tipo B. El <strong>Tipo D</strong> es para un alcance personalizado.
-            </div>
-
-            <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-3 mb-4">
-                <div class="col">
-                    <div class="card h-100 implementation-card" onclick="selectImplementationType('A')">
-                        <input type="radio" name="implementationType" value="A-1400-40-Básico" id="implTypeA" class="d-none">
-                        <div class="card-header implementation-header">
-                            <h3>TIPO A</h3>
-                            <div class="implementation-subtitle">Flujos Básicos</div>
-                        </div>
-                        <div class="card-body text-center">
-                            <div class="implementation-price">$1,400 USD</div>
-                            <div class="implementation-hours text-muted mb-3">40 horas incluidas</div>
-                            <ul class="list-unstyled text-start implementation-features">
-                                <li class="feature-item">Navegación por botones</li>
-                                <li class="feature-item">Respuestas preestablecidas</li>
-                                <li class="feature-item">Sin integraciones externas</li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-                <div class="col">
-                    <div class="card h-100 implementation-card" onclick="selectImplementationType('B')">
-                        <input type="radio" name="implementationType" value="B-2800-80-Intermedio" id="implTypeB" class="d-none">
-                        <div class="card-header implementation-header">
-                            <h3>TIPO B</h3>
-                            <div class="implementation-subtitle">Flujos con Integraciones</div>
-                        </div>
-                        <div class="card-body text-center">
-                            <div class="implementation-price">$2,800 USD</div>
-                            <div class="implementation-hours text-muted mb-3">80 horas incluidas</div>
-                            <ul class="list-unstyled text-start implementation-features">
-                                <li class="feature-item">Consumo de APIs/Webservices</li>
-                                <li class="feature-item">Conexión a BD/CRM</li>
-                                <li class="feature-item">Validaciones complejas</li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-                <div class="col">
-                    <div class="card h-100 implementation-card" onclick="selectImplementationType('C')">
-                        <input type="radio" name="implementationType" value="C-4200-120-Avanzado" id="implTypeC" class="d-none">
-                        <div class="card-header implementation-header">
-                            <h3>TIPO C</h3>
-                            <div class="implementation-subtitle">IA Generativa</div>
-                        </div>
-                        <div class="card-body text-center">
-                            <div class="implementation-price">$4,200 USD</div>
-                            <div class="implementation-hours text-muted mb-3">120 horas incluidas</div>
-                            <ul class="list-unstyled text-start implementation-features">
-                                <li class="feature-item">IA Generativa integrada</li>
-                                <li class="feature-item">Base de conocimiento</li>
-                                <li class="feature-item">Respuestas contextuales</li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-                <div class="col">
-                    <div class="card h-100 implementation-card" onclick="selectImplementationType('D')">
-                        <input type="radio" name="implementationType" value="D-custom-custom-Custom" id="implTypeD" class="d-none">
-                        <div class="card-header implementation-header">
-                            <h3>TIPO D</h3>
-                            <div class="implementation-subtitle">Solución Custom</div>
-                        </div>
-                        <div class="card-body text-center">
-                            <div class="implementation-price">A cotizar</div>
-                            <div class="implementation-hours text-muted mb-3">Horas variables</div>
-                            <ul class="list-unstyled text-start implementation-features">
-                                <li class="feature-item">Desarrollo a medida</li>
-                                <li class="feature-item">Requisitos específicos</li>
-                                <li class="feature-item">Consultoría especializada</li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div id="customImplementationSection" style="display: none;" class="p-3 bg-light border rounded mb-4">
-                <h3 class="fs-6">Configuración Personalizada</h3>
-                <div class="input-group mb-2"><label class="input-group-text">Horas estimadas:</label><input type="number" class="form-control" id="customHours" min="1" value="40" oninput="calculateImplementationCosts()"></div>
-                <div class="input-group"><label class="input-group-text">Tarifa por hora (USD):</label><input type="number" class="form-control" id="hourlyRate" min="1" value="35" step="1" oninput="calculateImplementationCosts()"></div>
-            </div>
-            <div class="text-end">
-                <strong>Subtotal Implementación MINDX (Pago Único): <span class="cost-display" id="mindxImplementationSubtotal">$0.00 USD</span></strong>
-            </div>
-
-            <div class="mt-4 p-3 bg-light border rounded">
-                <h3 class="fs-5">Hardware y Servicios SBC</h3>
-                <div class="form-check">
-                    <input type="checkbox" class="form-check-input" id="includeSBC" onchange="toggleSBCSection()">
-                    <label class="form-check-label" for="includeSBC">¿Desea incluir SBC (Session Border Controller)?</label>
-                </div>
-                <div id="sbcDetails" style="display: none;" class="mt-3">
-                    <div class="table-responsive">
-                        <table class="table table-bordered">
-                            <thead class="table-dark">
-                                <tr>
-                                    <th>Concepto SBC</th>
-                                    <th>Valor Unitario</th>
-                                    <th>Cantidad</th>
-                                    <th>Costo (Pago Único)</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>SBC KHOMP X 30 SESIONES Y SOPORTE 1Y</td>
-                                    <td class="cost-display">$1,700.00 USD</td>
-                                    <td><input type="number" class="form-control" id="sbcKhompQty" min="0" value="0" oninput="calculateSBCCosts()"></td>
-                                    <td class="cost-display" id="sbcKhompTotal">$0.00 USD</td>
-                                </tr>
-                                <tr>
-                                    <td>Hora de desarrollo / Implementación adicional SBC</td>
-                                    <td class="cost-display">$150,000.00 COP</td>
-                                    <td><input type="number" class="form-control" id="sbcAdditionalHoursQty" min="0" value="0" oninput="calculateSBCCosts()"></td>
-                                    <td class="cost-display" id="sbcAdditionalHoursTotal">$0.00 USD</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                    <div class="text-end mt-3">
-                        <strong>Subtotal SBC (Pago Único): <span class="cost-display" id="sbcSubtotal">$0.00 USD</span></strong>
-                    </div>
-                </div>
-            </div>
-
-            <div class="text-end mt-4 fs-5 border-top pt-3">
-                <strong>Total Implementación y Hardware (Pago Único): <span class="cost-display" id="totalOneTimeImplementationCost">$0.00 USD</span></strong>
-            </div>
-        </div>
-        
-        <!-- MÓDULO 8: RESUMEN FINAL -->
-        <div class="module" id="module8">
-            <h2 class="module-title">9. Resumen de Costos</h2>
-            
-            <div class="summary-section">
-                <h4>Costos Mensuales Recurrentes</h4>
-                <div class="table-responsive">
-                    <table class="table summary-table">
-                        <thead class="table-dark">
-                            <tr>
-                                <th>Concepto</th>
-                                <th>Detalle</th>
-                                <th>Costo Mensual (USD)</th>
-                            </tr>
-                        </thead>
-                        <tbody id="summaryMonthlyCostsBody">
-                        </tbody>
-                        <tfoot>
-                            <tr class="total-row">
-                                <td colspan="2"><strong>Total Mensual Recurrente (USD)</strong></td>
-                                <td class="cost-display" id="summaryTotalMonthlyUSD">$0.00</td>
-                            </tr>
-                             <tr>
-                                <td colspan="2"><strong>Total Mensual Recurrente (COP)</strong> <small>(Aprox.)</small></td>
-                                <td class="cost-display" id="summaryTotalMonthlyCOP">$0</td>
-                            </tr>
-                        </tfoot>
-                    </table>
-                </div>
-            </div>
-    
-            <div class="summary-section">
-                <h4>Pagos Únicos (Implementación y Hardware)</h4>
-                <div class="table-responsive">
-                    <table class="table summary-table">
-                        <thead class="table-dark">
-                            <tr>
-                                <th>Concepto</th>
-                                <th>Valor USD</th>
-                                <th>Valor COP (Aprox.)</th>
-                            </tr>
-                        </thead>
-                        <tbody id="summaryOneTimeCostsBody">
-                        </tbody>
-                        <tfoot>
-                            <tr class="total-row">
-                                <td><strong>Total Pagos Únicos</strong></td>
-                                <td class="cost-display" id="summaryTotalOneTimeUSD">$0.00</td>
-                                <td class="cost-display" id="summaryTotalOneTimeCOP">$0</td>
-                            </tr>
-                        </tfoot>
-                    </table>
-                </div>
-            </div>
-    
-            <div class="grand-total-section">
-                <h4>Total Inversión Contrato a 12 Meses</h4>
-                <div class="display-4" id="summaryTotalAnnualUSD">$0.00 USD</div>
-                <div class="fs-4" id="summaryTotalAnnualCOP">$0 COP</div>
-                <p class="small mt-2 mb-0">(Calculado con TRM de Referencia: <span id="summaryTrmValue">4200</span> COP/USD)</p>
-            </div>
-        </div>
-
-        <div class="d-flex justify-content-between mt-4">
-            <button class="btn btn-secondary" id="prevBtn" onclick="previousStep()" disabled>⬅ Anterior</button>
-            <button class="btn btn-gold" id="nextBtn" onclick="nextStep()">Siguiente ➡</button>
-        </div>
+<div class="app">
+  <header>
+    <h1>🌺 Inventario de Flores</h1>
+    <span class="tag">FEFO activo</span>
+    <span class="tag">Cuarto frío 2–4°C</span>
+    <div class="tabs" id="tabs">
+      <button class="tab active" data-tab="dash">Dashboard</button>
+      <button class="tab" data-tab="recepcion">Recepción</button>
+      <button class="tab" data-tab="almacen">Almacenamiento</button>
+      <button class="tab" data-tab="picking">Picking</button>
+      <button class="tab" data-tab="planeacion">Planeación</button>
     </div>
-    
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" xintegrity="sha384-YvpcrYf0tY3VeYyVcO19YitWZXY4CVQ+8OcXyPkCPzQLK0Hi+eLzHegbqipIUYl1" crossorigin="anonymous"></script>
-    <script>
-        let currentStep = 0;
-        const TOTAL_MODULES = 9; // 9 pasos (módulos 0 a 8)
+  </header>
+  <main>
+    <!-- DASHBOARD -->
+    <section id="view-dash" class="view">
+      <div class="grid cols-4">
+        <div class="card">
+          <div class="head"><span>Total tallos</span><span class="muted" id="tallos-ts"></span></div>
+          <div class="body"><div class="kpi"><span class="dot" style="background:var(--primary)"></span><span class="value" id="kpi-tallos">—</span></div><div class="muted">Sumatoria por cajas</div></div>
+        </div>
+        <div class="card">
+          <div class="head"><span>Cajas</span><span class="muted">en bodega</span></div>
+          <div class="body"><div class="kpi"><span class="dot" style="background:var(--accent)"></span><span class="value" id="kpi-cajas">—</span></div><div class="muted">Activas en inventario</div></div>
+        </div>
+        <div class="card">
+          <div class="head"><span>Edad promedio</span><span class="muted">días</span></div>
+          <div class="body"><div class="kpi"><span class="dot" style="background:var(--ok)"></span><span class="value" id="kpi-edad">—</span></div><div class="muted">Objetivo &lt; 3 días</div></div>
+        </div>
+        <div class="card">
+          <div class="head"><span>Riesgo caducidad</span><span class="muted">&gt;= 5 días</span></div>
+          <div class="body"><div class="kpi"><span class="dot" style="background:var(--danger)"></span><span class="value" id="kpi-riesgo">—</span></div><div class="muted">Acciones FEFO y ofertas flash</div></div>
+        </div>
+      </div>
 
-        // Variables globales para almacenar costos y selecciones
-        let includeMindX = true;
-        let includeFive9 = false;
-        
-        // Five9 Costs
-        let five9AgentsQty = 0;
-        let five9SupervisorsQty = 0;
-        let five9AdminsQty = 0;
-        let five9ChatAgentQty = 0;
-        let five9EmailAgentQty = 0;
-        let five9NCX1Qty = 0;
-        let five9SIPInboundQty = 0;
-        let five9SIPOutboundQty = 0;
-        let five9RecStorageQty = 0;
-        let five9CallLogStorageQty = 0;
-        let five9SalesforceQty = 0;
-        let five9UCAdapterQty = 0;
-        let five9AgentAssistQty = 0;
-        let five9MonthlyCost = 0;
-        const FIVE9_PROFESSIONAL_SERVICES_COST = 4500;
+      <div class="grid cols-3" style="margin-top:14px">
+        <div class="card">
+          <div class="head"><span>Stock por variedad</span><div class="legend" id="legend-var"></div></div>
+          <div class="body"><canvas id="chart-variedad" height="220"></canvas></div>
+        </div>
+        <div class="card">
+          <div class="head"><span>Distribución por edad</span><span class="muted">0–1 / 2–3 / 4–5 / 6+ días</span></div>
+          <div class="body"><canvas id="chart-edad" height="220"></canvas></div>
+        </div>
+        <div class="card">
+          <div class="head"><span>Recepciones últimos 7 días</span><span class="muted" id="rec-range"></span></div>
+          <div class="body"><canvas id="chart-recepciones" height="220"></canvas></div>
+        </div>
+      </div>
 
-        // MINDX Costs
-        let channelCost = 0, channelsSelected = 0, selectedChannelNames = [];
-        let packageCost = 0, packageConversations = 0, packageLicenses = 0, selectedPackageName = '';
-        let additionalConversationCostPerUnit = 0, additionalConversationsQty = 0;
-        let additionalInsightsCost = 0, additionalInsightsQty = 0;
-        let agentsCost = 0, agentsQty = 0;
-        let aiStorageCost = 0, aiUsageCost = 0, aiLoadingCost = 0, aiMonthlyCost = 0, aiDetailsIncluded = false;
-        let notificationCost = 0, totalNotificationsQty = 0;
-        let mindxImplementationCost = 0, selectedImplementationType = '', mindxImplementationHours = 0;
-        
-        // SBC Costs
-        let includeSBC = false;
-        let sbcKhompQty = 0;
-        let sbcAdditionalHoursQty = 0;
-        let sbcTotalOneTimeCost = 0;
+      <div class="card" style="margin-top:14px">
+        <div class="head"><span>Inventario en tiempo real</span>
+          <div class="row">
+            <input id="filtro" placeholder="Filtrar por variedad / proveedor / cliente / ubicación" size="48" />
+            <select id="f-calidad"><option value="">Calidad (todas)</option><option>Alta</option><option>Media</option><option>Baja</option></select>
+            <select id="f-edad"><option value="">Edad (todas)</option><option value="1">0–1</option><option value="3">2–3</option><option value="5">4–5</option><option value="6">6+</option></select>
+            <button class="primary" id="btn-export">Exportar CSV</button>
+          </div>
+        </div>
+        <div class="body">
+          <div class="statusbar"><span id="inv-count">—</span><span>• Última actualización:</span><span id="last-ts">—</span></div>
+          <div style="overflow:auto;max-height:360px">
+            <table id="tabla-inv">
+              <thead><tr>
+                <th data-k="id">ID Caja</th>
+                <th data-k="variedad">Variedad</th>
+                <th data-k="cantidad">Cantidad</th>
+                <th data-k="calidad">Calidad</th>
+                <th data-k="fechaRecepcion">Fecha Recepción</th>
+                <th data-k="edadDias">Edad (d)</th>
+                <th data-k="proveedor">Proveedor</th>
+                <th data-k="cliente">Cliente</th>
+                <th data-k="localizacion">Localización</th>
+                <th>Rotación</th>
+              </tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
 
-        // Global Constants
-        const FIVE9_PRICES = {
-            'VCC Agent Seat - Blended': 60.89,
-            'VCC Supervisor': 60.89,
-            'VCC Administrator': 60.89,
-            'Chat Agent': 3.38,
-            'Email Agent': 3.38,
-            'NCX1 Voice + Email + Adv. Chat': 67.66,
-            'SIP Inbound Flat Rate': 101.49,
-            'SIP Outbound (No Backup)': 101.49,
-            'VCC Recording Storage - 2 Months': 0.95,
-            'VCC Call Log Storage - 3 Months': 0.51,
-            'Salesforce Adapter': 10.15,
-            'Five9 UC Adapter - MS Teams / Zoom': 10.15,
-            'Agent Assist Standard': 50.74
-        };
-        const INSIGHTS_LICENSE_COST = 20;
-        const AGENT_LICENSE_COST = 20;
-        const TRM_DEFAULT = 4200;
-        const NOTIFICATION_PRICES = { marketing: 0.0150, utility: 0.0024, authentication: 0.0092 };
-        const SBC_PRICES = {
-            'SBC KHOMP X 30 SESIONES Y SOPORTE 1Y': 1700,
-            'Hora de desarrollo / Implementación adicional SBC (COP)': 150000 
-        };
+    <!-- RECEPCIÓN -->
+    <section id="view-recepcion" class="view" style="display:none">
+      <div class="grid cols-2">
+        <div class="card">
+          <div class="head"><span>Escaneo / Ingreso de cajas</span><span class="muted">QR / Código</span></div>
+          <div class="body">
+            <div class="toolbar">
+              <input id="rx-code" placeholder="ID Caja (ej. CX1234)" />
+              <select id="rx-variedad"></select>
+              <input id="rx-cant" type="number" min="1" placeholder="Cantidad" style="width:110px" />
+              <select id="rx-calidad"><option>Alta</option><option>Media</option><option>Baja</option></select>
+              <input id="rx-prov" placeholder="Proveedor" />
+              <input id="rx-cli" placeholder="Cliente" />
+              <select id="rx-loc"></select>
+              <button class="good" id="rx-add">Agregar</button>
+            </div>
+            <div class="statusbar" id="rx-status">Listo para escanear</div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="head"><span>Últimos ingresos</span><span class="muted">5 recientes</span></div>
+          <div class="body">
+            <div style="max-height:260px;overflow:auto">
+              <table id="rx-table"><thead><tr><th>Hora</th><th>ID</th><th>Variedad</th><th>Cant.</th><th>Ubicación</th></tr></thead><tbody></tbody></table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
 
-        function updateFavicon(step) {
-            const favicon = document.getElementById('favicon');
-            favicon.href = `data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3e%3ccircle cx='50' cy='50' r='40' fill='%23d4af37'/%3e%3ctext x='50' y='60' text-anchor='middle' fill='%23fff' font-size='30' font-weight='bold'%3e${step + 1}%3c/text%3e%3c/svg%3e`;
-        }
+    <!-- ALMACENAMIENTO -->
+    <section id="view-almacen" class="view" style="display:none">
+      <div class="grid cols-2">
+        <div class="card">
+          <div class="head"><span>Mapa de estantes</span><span class="muted">Zonas A–D</span></div>
+          <div class="body">
+            <div class="rack" id="rack"></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="head"><span>Sugerencias FEFO</span><span class="muted">Recoja primero…</span></div>
+          <div class="body">
+            <div class="route" id="fefo-list"></div>
+          </div>
+        </div>
+      </div>
+    </section>
 
-        function goToStep(step) {
-            if (step < 0 || step >= TOTAL_MODULES) return;
+    <!-- PICKING -->
+    <section id="view-picking" class="view" style="display:none">
+      <div class="grid cols-2">
+        <div class="card">
+          <div class="head"><span>Crear orden de picking</span><span class="muted">Optimiza ruta por ubicación</span></div>
+          <div class="body">
+            <div class="toolbar">
+              <input id="po-cliente" placeholder="Cliente pedido" />
+              <select id="po-var"></select>
+              <input id="po-cant" type="number" min="1" placeholder="Cantidad tallos" style="width:140px" />
+              <button class="primary" id="po-add">Agregar ítem</button>
+              <button id="po-opt">Optimizar ruta</button>
+            </div>
+            <div class="route" id="po-items"></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="head"><span>Ruta sugerida</span><span class="muted">Orden por localización</span></div>
+          <div class="body">
+            <div class="route" id="po-route"></div>
+          </div>
+        </div>
+      </div>
+    </section>
 
-            document.querySelectorAll('.module').forEach(m => m.classList.remove('active'));
-            document.getElementById(`module${step}`).classList.add('active');
-            
-            if (step === 8) {
-                updateSummaryPage();
-            }
+    <!-- PLANEACIÓN -->
+    <section id="view-planeacion" class="view" style="display:none">
+      <div class="grid cols-3">
+        <div class="card">
+          <div class="head"><span>Cobertura por variedad</span><span class="muted">días al ritmo actual</span></div>
+          <div class="body"><canvas id="chart-cover" height="220"></canvas></div>
+        </div>
+        <div class="card">
+          <div class="head"><span>Alertas de reabastecimiento</span><span class="muted">min/máx</span></div>
+          <div class="body"><div id="plan-alerts" class="route"></div></div>
+        </div>
+        <div class="card">
+          <div class="head"><span>Proyección de salida</span><span class="muted">7 días</span></div>
+          <div class="body"><canvas id="chart-forecast" height="220"></canvas></div>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+// --- Datos simulados y utilidades ---
+const variedades = ["Rosa Roja","Clavel Blanco","Alstroemeria","Girasol","Hortensia","Crisantemo"];
+const proveedores = ["Finca Primavera","Bella Flor","Los Andes","La Rivera"]; 
+const clientes = ["Mayorista Bogotá","Exportación Miami","Retail Medellín","Online Cali"];
+const zonas = ["A","B","C","D"]; // estantes A–D
 
-            const navLinks = document.querySelectorAll('.navbar-nav .nav-link');
-            navLinks.forEach((link, index) => {
-                link.classList.remove('active');
-                if (index === step) {
-                    link.classList.add('active');
-                }
-            });
-            
-            const summaryNavLink = document.getElementById('summaryNavLink');
-            if(summaryNavLink) {
-                summaryNavLink.style.display = (step >= TOTAL_MODULES - 2) ? 'block' : 'none';
-            }
+const state = {
+  inventario: [],
+  recepciones7d: [],
+  pedidos: [],
+  sortKey: 'fechaRecepcion',
+  sortAsc: false
+};
 
-            const progressFill = document.getElementById('progressFill');
-            const progressPercentage = TOTAL_MODULES > 1 ? (step / (TOTAL_MODULES - 1)) * 100 : 0;
-            progressFill.style.width = `${progressPercentage}%`;
-            progressFill.setAttribute('aria-valuenow', progressPercentage);
-            
-            updateFavicon(step);
-            
-            document.getElementById('prevBtn').disabled = step === 0;
-            document.getElementById('nextBtn').disabled = (step === TOTAL_MODULES - 1);
-            
-            currentStep = step;
-            updateModuleDisplayLogic(); 
-        }
+function rand(a,b){return Math.floor(Math.random()*(b-a+1))+a}
+function choice(arr){return arr[rand(0,arr.length-1)]}
+function fechaDiasAtras(d){const x=new Date();x.setDate(x.getDate()-d);x.setHours(9,rand(0,59),0,0);return x}
+function fmtDate(d){const x=new Date(d);return x.toISOString().slice(0,10)}
+function nowTS(){const x=new Date();return x.toLocaleString()}
+function idCaja(){return `CX${rand(1000,9999)}`}
+function loc(){return `${choice(zonas)}${rand(1,4)}-${String(rand(1,24)).padStart(2,'0')}`}
 
-        function nextStep() {
-            if (currentStep < TOTAL_MODULES - 1) {
-                goToStep(currentStep + 1);
-            }
-        }
+// Generar inventario inicial
+for(let i=0;i<120;i++){
+  const edad = rand(0,7);
+  const fecha = fechaDiasAtras(edad);
+  state.inventario.push({
+    id: idCaja(),
+    variedad: choice(variedades),
+    cantidad: rand(80,260),
+    calidad: ["Alta","Media","Baja"][rand(0,2)],
+    fechaRecepcion: fmtDate(fecha),
+    edadDias: edad,
+    proveedor: choice(proveedores),
+    cliente: choice(clientes),
+    localizacion: loc()
+  })
+}
 
-        function previousStep() {
-            if (currentStep > 0) {
-                goToStep(currentStep - 1);
-            }
-        }
+// Recepciones por día (7 días)
+for(let i=6;i>=0;i--){ state.recepciones7d.push({d:fmtDate(fechaDiasAtras(i)), n: rand(6,22)}) }
 
-        function formatCurrency(value, currency = 'USD') {
-            const options = { style: 'currency', currency, minimumFractionDigits: 2 };
-            if (currency === 'COP') {
-                options.minimumFractionDigits = 0;
-                options.maximumFractionDigits = 0;
-            }
-            return new Intl.NumberFormat('es-CO', options).format(value);
-        }
-        
-        function handleProductSelection() {
-            includeMindX = document.getElementById('includeMindX').checked;
-            includeFive9 = document.getElementById('includeFive9').checked;
+// Persistencia sencilla
+if(localStorage.getItem('inv_data')){
+  try{ state.inventario = JSON.parse(localStorage.getItem('inv_data')) }catch(e){}
+}
 
-            document.getElementById('five9Details').style.display = includeFive9 ? 'block' : 'none';
-            document.getElementById('five9ImplementationSection').style.display = includeFive9 ? 'block' : 'none';
+function save(){ localStorage.setItem('inv_data', JSON.stringify(state.inventario)) }
 
-            if (!includeMindX && !includeFive9) {
-                alert("Debe seleccionar al menos un producto (MINDX o Five9).");
-                if (!includeMindX) document.getElementById('includeMindX').checked = true;
-                handleProductSelection(); 
-                return;
-            }
-            
-            calculateFive9Costs(); 
-            calculateImplementationCosts(); 
-            updateModuleDisplayLogic(); 
-        }
+// --- UI helpers ---
+const $ = s=>document.querySelector(s);
+const $$ = s=>Array.from(document.querySelectorAll(s));
+function toast(msg){const t=$('#toast');t.textContent=msg;t.style.display='block';setTimeout(()=>t.style.display='none',2500)}
 
-        function updateModuleDisplayLogic() {
-            const agentLicensesInput = document.getElementById('agentLicenses');
-            const five9AgentNote = document.getElementById('five9AgentNote');
+// --- Tabs ---
+$('#tabs').addEventListener('click',e=>{
+  if(!e.target.matches('.tab'))return;
+  $$('.tab').forEach(b=>b.classList.remove('active')); e.target.classList.add('active');
+  const tab = e.target.dataset.tab;
+  $$('.view').forEach(v=>v.style.display='none');
+  $('#view-'+(tab==='dash'?'dash':tab)).style.display='block';
+})
 
-            if (includeFive9) {
-                agentLicensesInput.disabled = true;
-                agentLicensesInput.value = 0; 
-                agentsCost = 0; 
-                five9AgentNote.style.display = 'block'; 
-            } else {
-                agentLicensesInput.disabled = false;
-                five9AgentNote.style.display = 'none'; 
-            }
-            calculateAgentCosts(); 
+// --- Tabla Inventario (Dashboard) ---
+const tbody = document.querySelector('#tabla-inv tbody');
+const headCells = $$('#tabla-inv thead th[data-k]');
+headCells.forEach(th=>{
+  th.style.cursor='pointer';
+  th.addEventListener('click',()=>{
+    const k=th.dataset.k; state.sortKey=k; state.sortAsc = state.sortKey===k ? !state.sortAsc : true; renderInventory()
+  })
+})
 
-            // Nav link visibility
-            for (let i = 1; i <= 7; i++) {
-                const navLink = document.getElementById(`navLink${i}`);
-                if (navLink) {
-                    if (i >= 1 && i <= 6) { // MINDX modules
-                        navLink.style.display = includeMindX ? 'block' : 'none';
-                    } else if (i === 7) { // Implementation module
-                        navLink.style.display = (includeMindX || includeFive9 || includeSBC) ? 'block' : 'none';
-                    }
-                }
-            }
-        }
+function renderInventory(){
+  const term = $('#filtro').value.toLowerCase();
+  const cal = $('#f-calidad').value; const edad = $('#f-edad').value;
+  let rows = state.inventario.filter(x=>{
+    const hit = (x.id+x.variedad+x.proveedor+x.cliente+x.localizacion).toLowerCase().includes(term);
+    const okCal = !cal || x.calidad===cal;
+    const okEdad = !edad || (edad==1? x.edadDias<=1 : edad==3? x.edadDias>=2 && x.edadDias<=3 : edad==5? x.edadDias>=4 && x.edadDias<=5 : x.edadDias>=6);
+    return hit && okCal && okEdad;
+  })
+  rows.sort((a,b)=>{
+    const k=state.sortKey; let va=a[k], vb=b[k];
+    if(k==='fechaRecepcion'){va=new Date(va);vb=new Date(vb)}
+    if(va<vb) return state.sortAsc?-1:1; if(va>vb) return state.sortAsc?1:-1; return 0;
+  })
+  tbody.innerHTML = rows.map(x=>{
+    const rot = x.edadDias>=6?'<span class="pill bad">Urgente</span>': x.edadDias>=4?'<span class="pill warn">Prioridad</span>':'<span class="pill">Normal</span>'
+    return `<tr>
+      <td>${x.id}</td><td>${x.variedad}</td><td>${x.cantidad}</td><td>${x.calidad}</td>
+      <td>${x.fechaRecepcion}</td><td>${x.edadDias}</td><td>${x.proveedor}</td><td>${x.cliente}</td><td>${x.localizacion}</td><td>${rot}</td>
+    </tr>`
+  }).join('');
+  $('#inv-count').textContent = `${rows.length} cajas visibles`;
+  $('#last-ts').textContent = nowTS();
+}
+['keyup','change'].forEach(ev=>{
+  $('#filtro').addEventListener(ev,renderInventory);
+  $('#f-calidad').addEventListener(ev,renderInventory);
+  $('#f-edad').addEventListener(ev,renderInventory);
+});
 
-        function calculateFive9Costs() {
-            if (!includeFive9) {
-                five9MonthlyCost = 0;
-            } else {
-                five9AgentsQty = parseInt(document.getElementById('five9Agents').value) || 0;
-                five9SupervisorsQty = parseInt(document.getElementById('five9Supervisors').value) || 0;
-                five9AdminsQty = parseInt(document.getElementById('five9Admins').value) || 0;
-                five9ChatAgentQty = parseInt(document.getElementById('five9ChatAgent').value) || 0;
-                five9EmailAgentQty = parseInt(document.getElementById('five9EmailAgent').value) || 0;
-                five9NCX1Qty = parseInt(document.getElementById('five9NCX1').value) || 0;
-                five9SIPInboundQty = parseInt(document.getElementById('five9SIPInbound').value) || 0;
-                five9SIPOutboundQty = parseInt(document.getElementById('five9SIPOutbound').value) || 0;
-                five9RecStorageQty = parseInt(document.getElementById('five9RecStorage').value) || 0;
-                five9CallLogStorageQty = parseInt(document.getElementById('five9CallLogStorage').value) || 0;
-                five9SalesforceQty = parseInt(document.getElementById('five9Salesforce').value) || 0;
-                five9UCAdapterQty = parseInt(document.getElementById('five9UCAdapter').value) || 0;
-                five9AgentAssistQty = parseInt(document.getElementById('five9AgentAssist').value) || 0;
+// --- KPI y Charts (vanilla Canvas) ---
+function sum(arr,k){return arr.reduce((a,b)=>a+(k?b[k]:b),0)}
+function avg(arr,k){return arr.length?sum(arr,k)/arr.length:0}
+function groupCount(arr,k){const m={};arr.forEach(x=>m[x[k]]=(m[x[k]]||0)+x.cantidad);return m}
+function bucketsEdad(arr){const b={"0–1":0,"2–3":0,"4–5":0,"6+":0};arr.forEach(x=>{if(x.edadDias<=1)b["0–1"]+=x.cantidad;else if(x.edadDias<=3)b["2–3"]+=x.cantidad;else if(x.edadDias<=5)b["4–5"]+=x.cantidad;else b["6+"]+=x.cantidad});return b}
 
-                let currentFive9Cost = 0;
-                currentFive9Cost += five9AgentsQty * FIVE9_PRICES['VCC Agent Seat - Blended'];
-                currentFive9Cost += five9SupervisorsQty * FIVE9_PRICES['VCC Supervisor'];
-                currentFive9Cost += five9AdminsQty * FIVE9_PRICES['VCC Administrator'];
-                currentFive9Cost += five9ChatAgentQty * FIVE9_PRICES['Chat Agent'];
-                currentFive9Cost += five9EmailAgentQty * FIVE9_PRICES['Email Agent'];
-                currentFive9Cost += five9NCX1Qty * FIVE9_PRICES['NCX1 Voice + Email + Adv. Chat'];
-                currentFive9Cost += five9SIPInboundQty * FIVE9_PRICES['SIP Inbound Flat Rate'];
-                currentFive9Cost += five9SIPOutboundQty * FIVE9_PRICES['SIP Outbound (No Backup)'];
-                currentFive9Cost += five9RecStorageQty * FIVE9_PRICES['VCC Recording Storage - 2 Months'];
-                currentFive9Cost += five9CallLogStorageQty * FIVE9_PRICES['VCC Call Log Storage - 3 Months'];
-                currentFive9Cost += five9SalesforceQty * FIVE9_PRICES['Salesforce Adapter'];
-                currentFive9Cost += five9UCAdapterQty * FIVE9_PRICES['Five9 UC Adapter - MS Teams / Zoom'];
-                currentFive9Cost += five9AgentAssistQty * FIVE9_PRICES['Agent Assist Standard'];
-                
-                five9MonthlyCost = currentFive9Cost;
-            }
-            
-            document.getElementById('five9AgentsCost').textContent = formatCurrency(five9AgentsQty * FIVE9_PRICES['VCC Agent Seat - Blended']);
-            document.getElementById('five9SupervisorsCost').textContent = formatCurrency(five9SupervisorsQty * FIVE9_PRICES['VCC Supervisor']);
-            document.getElementById('five9AdminsCost').textContent = formatCurrency(five9AdminsQty * FIVE9_PRICES['VCC Administrator']);
-            document.getElementById('five9ChatAgentCost').textContent = formatCurrency(five9ChatAgentQty * FIVE9_PRICES['Chat Agent']);
-            document.getElementById('five9EmailAgentCost').textContent = formatCurrency(five9EmailAgentQty * FIVE9_PRICES['Email Agent']);
-            document.getElementById('five9NCX1Cost').textContent = formatCurrency(five9NCX1Qty * FIVE9_PRICES['NCX1 Voice + Email + Adv. Chat']);
-            document.getElementById('five9SIPInboundCost').textContent = formatCurrency(five9SIPInboundQty * FIVE9_PRICES['SIP Inbound Flat Rate']);
-            document.getElementById('five9SIPOutboundCost').textContent = formatCurrency(five9SIPOutboundQty * FIVE9_PRICES['SIP Outbound (No Backup)']);
-            document.getElementById('five9RecStorageCost').textContent = formatCurrency(five9RecStorageQty * FIVE9_PRICES['VCC Recording Storage - 2 Months']);
-            document.getElementById('five9CallLogStorageCost').textContent = formatCurrency(five9CallLogStorageQty * FIVE9_PRICES['VCC Call Log Storage - 3 Months']);
-            document.getElementById('five9SalesforceCost').textContent = formatCurrency(five9SalesforceQty * FIVE9_PRICES['Salesforce Adapter']);
-            document.getElementById('five9UCAdapterCost').textContent = formatCurrency(five9UCAdapterQty * FIVE9_PRICES['Five9 UC Adapter - MS Teams / Zoom']);
-            document.getElementById('five9AgentAssistCost').textContent = formatCurrency(five9AgentAssistQty * FIVE9_PRICES['Agent Assist Standard']);
-            document.getElementById('five9Subtotal').textContent = `${formatCurrency(five9MonthlyCost)} USD`;
-        }
+function drawBar(canvas, labels, values){
+  const ctx=canvas.getContext('2d'); const W=canvas.width=canvas.clientWidth, H=canvas.height=220;
+  ctx.clearRect(0,0,W,H); const max=Math.max(...values,10); const pad=32; const bw=(W-pad*2)/values.length*0.7; const gap=(W-pad*2)/values.length-bw; let x=pad;
+  ctx.strokeStyle='#20324b'; ctx.beginPath(); for(let y=H-40;y>20;y-=40){ctx.moveTo(pad,y);ctx.lineTo(W-pad,y)} ctx.stroke();
+  values.forEach((v,i)=>{ const h=(H-60)*v/max; ctx.fillStyle=`hsl(${(i*55)%360} 70% 60%)`; ctx.fillRect(x,H-40-h,bw,h); ctx.fillStyle='#a7b0c2'; ctx.fillText(labels[i], x, H-22); x+=bw+gap; })
+}
+function drawDonut(canvas, labels, values){
+  const ctx=canvas.getContext('2d'); const W=canvas.width=canvas.clientWidth, H=canvas.height=220; const cx=W/2, cy=H/2; const r=Math.min(W,H)/2-16; const ir=r*0.55; const total=sum(values);
+  ctx.clearRect(0,0,W,H); let a=-Math.PI/2; values.forEach((v,i)=>{ const ang=total? (v/total)*Math.PI*2 : 0; ctx.beginPath(); ctx.moveTo(cx,cy); ctx.arc(cx,cy,r,a,a+ang); ctx.closePath(); ctx.fillStyle=`hsl(${(i*75)%360} 70% 60%)`; ctx.fill(); a+=ang;});
+  // agujero
+  ctx.globalCompositeOperation='destination-out'; ctx.beginPath(); ctx.arc(cx,cy,ir,0,Math.PI*2); ctx.fill(); ctx.globalCompositeOperation='source-over';
+  ctx.fillStyle='#a7b0c2'; ctx.textAlign='center'; ctx.fillText(total+" tallos",cx,cy+4);
+}
+function drawLine(canvas, labels, values){
+  const ctx=canvas.getContext('2d'); const W=canvas.width=canvas.clientWidth, H=canvas.height=220; ctx.clearRect(0,0,W,H);
+  const pad=32; const max=Math.max(...values,10); const xs=(W-pad*2)/(values.length-1), ys=(H-60)/max; ctx.strokeStyle='#20324b'; ctx.beginPath(); for(let y=H-40;y>20;y-=40){ctx.moveTo(pad,y);ctx.lineTo(W-pad,y)} ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(pad, H-40-values[0]*ys); for(let i=1;i<values.length;i++){ ctx.lineTo(pad+i*xs, H-40-values[i]*ys) } ctx.strokeStyle='rgba(167,139,250,.95)'; ctx.lineWidth=2; ctx.stroke();
+  // puntos
+  for(let i=0;i<values.length;i++){ ctx.beginPath(); ctx.arc(pad+i*xs, H-40-values[i]*ys, 3, 0, Math.PI*2); ctx.fillStyle='#22d3ee'; ctx.fill(); }
+}
 
-        function calculateChannelCosts() {
-            if (!includeMindX) { channelCost = 0; channelsSelected = 0; selectedChannelNames = []; return; }
-            const checkboxes = document.querySelectorAll('#module1 input[type="checkbox"]');
-            selectedChannelNames = [];
-            let firstCheckedFound = false;
-            checkboxes.forEach(checkbox => {
-                if (checkbox.checked) {
-                    selectedChannelNames.push(checkbox.parentElement.nextElementSibling.textContent);
-                }
-                const costCell = checkbox.parentElement.nextElementSibling.nextElementSibling;
-                const baseCost = parseFloat(costCell.getAttribute('data-cost'));
-                if (checkbox.checked && !firstCheckedFound) {
-                    costCell.textContent = formatCurrency(0) + ' (Gratis)';
-                    costCell.style.color = '#d4af37';
-                    firstCheckedFound = true;
-                } else {
-                    costCell.textContent = formatCurrency(baseCost);
-                    costCell.style.color = '#6c757d';
-                }
-            });
-            channelsSelected = selectedChannelNames.length;
-            channelCost = channelsSelected > 0 ? (channelsSelected - 1) * 100 : 0;
-            document.getElementById('channelSubtotal').textContent = `${formatCurrency(channelCost)} USD`;
-        }
+function refreshKPI(){
+  $('#kpi-tallos').textContent = sum(state.inventario,'cantidad').toLocaleString();
+  $('#kpi-cajas').textContent = state.inventario.length;
+  $('#kpi-edad').textContent = avg(state.inventario,'edadDias').toFixed(1);
+  $('#kpi-riesgo').textContent = state.inventario.filter(x=>x.edadDias>=5).length;
+  $('#tallos-ts').textContent = nowTS();
+}
 
-        function calculatePackageCosts() {
-            if (!includeMindX) { packageCost = 0; packageConversations = 0; packageLicenses = 0; additionalConversationCostPerUnit = 0; additionalConversationsQty = 0; selectedPackageName = ''; return; }
-            const selectedPackageRadio = document.querySelector('input[name="package"]:checked');
-            additionalConversationsQty = parseInt(document.getElementById('additionalConversations').value) || 0;
-            if (selectedPackageRadio) {
-                const [conv, price, licenses, addCost, name] = selectedPackageRadio.value.split('-');
-                packageConversations = parseInt(conv);
-                let basePackagePrice = parseFloat(price);
-                packageLicenses = parseInt(licenses);
-                additionalConversationCostPerUnit = parseFloat(addCost);
-                selectedPackageName = name;
-                packageCost = basePackagePrice + (additionalConversationsQty * additionalConversationCostPerUnit);
-                document.getElementById('includedLicenses').textContent = packageLicenses;
-            } else {
-                packageCost = 0; packageConversations = 0; packageLicenses = 0;
-                additionalConversationCostPerUnit = 0; selectedPackageName = '';
-                document.getElementById('includedLicenses').textContent = '0';
-            }
-            document.getElementById('packageSubtotal').textContent = `${formatCurrency(packageCost)} USD`;
-            calculateInsightsCosts();
-            calculateAICosts();
-        }
+function refreshCharts(){
+  const byVar = groupCount(state.inventario,'variedad');
+  const labels1 = Object.keys(byVar), values1 = Object.values(byVar);
+  drawBar($('#chart-variedad'), labels1, values1);
+  // leyenda
+  $('#legend-var').innerHTML = labels1.map((l,i)=>`<span class="item"><span class="sw" style="background:hsl(${(i*55)%360} 70% 60%)"></span>${l}</span>`).join("");
 
-        function calculateInsightsCosts() {
-            if (!includeMindX) { additionalInsightsCost = 0; additionalInsightsQty = 0; return; }
-            additionalInsightsQty = parseInt(document.getElementById('additionalInsights').value) || 0;
-            additionalInsightsCost = additionalInsightsQty * INSIGHTS_LICENSE_COST;
-            document.getElementById('insightsSubtotal').textContent = `${formatCurrency(additionalInsightsCost)} USD`;
-        }
+  const buck = bucketsEdad(state.inventario); drawDonut($('#chart-edad'), Object.keys(buck), Object.values(buck));
+  const lbl = state.recepciones7d.map(x=>x.d.slice(5)); const val = state.recepciones7d.map(x=>x.n); drawLine($('#chart-recepciones'), lbl, val); $('#rec-range').textContent=`${state.recepciones7d[0].d} a ${state.recepciones7d.at(-1).d}`;
+}
 
-        function calculateAgentCosts() {
-            if (!includeMindX || includeFive9) { 
-                agentsCost = 0; 
-                agentsQty = 0; 
-                document.getElementById('agentLicenses').value = 0; 
-                document.getElementById('agentsSubtotal').textContent = `${formatCurrency(agentsCost)} USD`;
-                return; 
-            }
-            agentsQty = parseInt(document.getElementById('agentLicenses').value) || 0;
-            agentsCost = agentsQty * AGENT_LICENSE_COST;
-            document.getElementById('agentsSubtotal').textContent = `${formatCurrency(agentsCost)} USD`;
-        }
+// --- Recepción ---
+const rxVarSel = $('#rx-variedad'); variedades.forEach(v=>{const o=document.createElement('option');o.textContent=v;rxVarSel.appendChild(o)});
+const rxLocSel = $('#rx-loc'); (function(){ for(let z of zonas){ for(let i=1;i<=4;i++){ for(let j=1;j<=24;j++){ const o=document.createElement('option'); o.textContent=`${z}${i}-${String(j).padStart(2,'0')}`; rxLocSel.appendChild(o) } } } })();
 
-        function toggleAISection() {
-            if (!includeMindX) { aiDetailsIncluded = false; calculateAICosts(); return; }
-            aiDetailsIncluded = document.getElementById('includeAI').checked;
-            document.getElementById('aiDetails').style.display = aiDetailsIncluded ? 'block' : 'none';
-            calculateAICosts();
-        }
+function pushRxRow(x){
+  const tr = document.createElement('tr');
+  tr.innerHTML = `<td>${new Date().toLocaleTimeString()}</td><td>${x.id}</td><td>${x.variedad}</td><td>${x.cantidad}</td><td>${x.localizacion}</td>`;
+  const tb = $('#rx-table tbody'); tb.prepend(tr); while(tb.children.length>5) tb.removeChild(tb.lastChild);
+}
 
-        function toggleBillingModel() {
-            if (!includeMindX) { calculateAICosts(); return; }
-            const billingModel = document.getElementById('billingModel').value;
-            const tokensModel = document.getElementById('tokensModel');
-            const messagesModel = document.getElementById('messagesModel');
-            const consumptionLabel = document.getElementById('consumptionLabel');
-            if (billingModel === 'tokens') {
-                tokensModel.style.display = 'block';
-                messagesModel.style.display = 'none';
-                consumptionLabel.textContent = 'Tokens/mes estimados';
-            } else {
-                tokensModel.style.display = 'none';
-                messagesModel.style.display = 'block';
-                consumptionLabel.textContent = 'Costo unitario';
-            }
-            calculateAICosts();
-        }
+$('#rx-add').addEventListener('click',()=>{
+  const rec={ id:($('#rx-code').value||idCaja()).toUpperCase(), variedad:$('#rx-variedad').value, cantidad:parseInt($('#rx-cant').value||rand(80,200)), calidad:$('#rx-calidad').value, fechaRecepcion:fmtDate(new Date()), edadDias:0, proveedor:$('#rx-prov').value||choice(proveedores), cliente:$('#rx-cli').value||choice(clientes), localizacion:$('#rx-loc').value||loc() };
+  state.inventario.unshift(rec); save(); pushRxRow(rec); renderAll(); toast(`Caja ${rec.id} ingresada`); $('#rx-status').textContent=`Agregada ${rec.id} → ${rec.localizacion}`;
+})
 
-        function calculateAICosts() {
-            if (!includeMindX) { 
-                aiLoadingCost = 0; aiStorageCost = 0; aiUsageCost = 0; aiMonthlyCost = 0; 
-            } else if (!aiDetailsIncluded) {
-                aiLoadingCost = 0; 
-                aiStorageCost = 0; 
-                aiUsageCost = 0;
-                aiMonthlyCost = 0;
-            } else {
-                const fileSize = parseFloat(document.getElementById('fileSize').value) || 0;
-                const updatesPerYear = parseInt(document.getElementById('updateFrequency').value) || 1;
-                const billingModel = document.getElementById('billingModel').value;
-                aiLoadingCost = fileSize * 0.093 * updatesPerYear;
-                const storageGB = (fileSize / 1000) * 1.7; 
-                aiStorageCost = storageGB * 0.1 * 30; 
-                let totalConversations = packageConversations + additionalConversationsQty;
-                if (totalConversations === 0) {
-                    totalConversations = 1000; 
-                }
-                if (billingModel === 'tokens') {
-                    const aiMessagesPerConv = parseInt(document.getElementById('aiMessagesTokens').value) || 0;
-                    const tokensPerMessage = parseInt(document.getElementById('tokensPerMessage').value) || 350;
-                    const totalAIMessages = totalConversations * aiMessagesPerConv;
-                    const totalTokens = totalAIMessages * tokensPerMessage;
-                    aiUsageCost = (totalTokens / 1000000) * 6.3;
-                    document.getElementById('aiConversationsEstimate').textContent = totalConversations.toLocaleString('es-CO');
-                    document.getElementById('aiMessagesEstimate').textContent = totalAIMessages.toLocaleString('es-CO');
-                    document.getElementById('consumptionEstimate').textContent = totalTokens.toLocaleString('es-CO') + ' tokens';
-                } else {
-                    const aiMessagesPerConv = parseInt(document.getElementById('aiMessagesMsg').value) || 0;
-                    const totalAIMessages = totalConversations * aiMessagesPerConv;
-                    aiUsageCost = (totalAIMessages / 20000) * 111;
-                    document.getElementById('aiConversationsEstimate').textContent = totalConversations.toLocaleString('es-CO');
-                    document.getElementById('aiMessagesEstimate').textContent = totalAIMessages.toLocaleString('es-CO');
-                    document.getElementById('consumptionEstimate').textContent = formatCurrency(111/20000) + '/mensaje';
-                }
-                aiMonthlyCost = aiStorageCost + aiUsageCost;
-            }
-            document.getElementById('aiLoadingSubtotal').textContent = `${formatCurrency(aiLoadingCost)} USD`;
-            document.getElementById('aiStorageSubtotal').textContent = `${formatCurrency(aiStorageCost)} USD`;
-            document.getElementById('aiUsageSubtotal').textContent = `${formatCurrency(aiUsageCost)} USD`;
-            document.getElementById('aiMonthlySubtotal').textContent = `${formatCurrency(aiMonthlyCost)} USD`;
-        }
+// --- Almacenamiento (rack) ---
+function renderRack(){
+  const el = $('#rack'); el.innerHTML='';
+  const slots = {}; state.inventario.forEach(x=>slots[x.localizacion]=x);
+  // construir 6x? por simplicidad 6x16 visibles
+  const visible = []; for(let z of zonas){ for(let i=1;i<=3;i++){ for(let j=1;j<=6;j++){ visible.push(`${z}${i}-${String(j).padStart(2,'0')}`) } } }
+  visible.forEach(code=>{
+    const div = document.createElement('div'); div.className='slot';
+    const item = slots[code];
+    div.innerHTML = `<span class="badge">${code}</span>${item? `${item.variedad} · ${item.cantidad}` : '— vacío —'}`;
+    if(item){ if(item.edadDias>=6) div.classList.add('risk'); else if(item.edadDias>=4) div.classList.add('oldest'); }
+    el.appendChild(div);
+  })
+  // lista FEFO (top 8 más viejos)
+  const top = [...state.inventario].sort((a,b)=>b.edadDias-a.edadDias).slice(0,8);
+  $('#fefo-list').innerHTML = top.map(x=>`<div class="step">${x.variedad} — ${x.cantidad} tallos · <b>${x.edadDias}d</b> · ${x.localizacion}</div>`).join('');
+}
 
-        function calculateNotificationCosts() {
-            if (!includeMindX) { notificationCost = 0; totalNotificationsQty = 0; return; }
-            const marketingQty = parseInt(document.getElementById('notifMarketingQty').value) || 0;
-            const utilityQty = parseInt(document.getElementById('notifUtilityQty').value) || 0;
-            const authenticationQty = parseInt(document.getElementById('notifAuthenticationQty').value) || 0;
-            const marketingCost = marketingQty * NOTIFICATION_PRICES.marketing;
-            const utilityCost = utilityQty * NOTIFICATION_PRICES.utility;
-            const authenticationCost = authenticationQty * NOTIFICATION_PRICES.authentication;
-            notificationCost = marketingCost + utilityCost + authenticationCost;
-            totalNotificationsQty = marketingQty + utilityQty + authenticationQty;
-            document.getElementById('notifMarketingCost').textContent = formatCurrency(marketingCost);
-            document.getElementById('notifUtilityCost').textContent = formatCurrency(utilityCost);
-            document.getElementById('notifAuthenticationCost').textContent = formatCurrency(authenticationCost);
-            document.getElementById('notificationSubtotal').textContent = `${formatCurrency(notificationCost)} USD`;
-        }
+// --- Picking ---
+const poVar = $('#po-var'); variedades.forEach(v=>{const o=document.createElement('option');o.textContent=v;poVar.appendChild(o)});
+$('#po-add').addEventListener('click',()=>{
+  const it={cliente:$('#po-cliente').value||'—', variedad:$('#po-var').value, cant:parseInt($('#po-cant').value||100)}; state.pedidos.push(it); renderPO(); toast('Ítem agregado a orden');
+})
+function renderPO(){ $('#po-items').innerHTML = state.pedidos.map((x,i)=>`<div class="step">${i+1}. ${x.variedad} — ${x.cant} tallos <span class="muted">(${x.cliente})</span></div>`).join('') }
+$('#po-opt').addEventListener('click',()=>{
+  // asignar ubicaciones más cercanas (simples: tomar cajas de esa variedad, ordenar por localización alfanumérica)
+  const picks=[]; state.pedidos.forEach(p=>{
+    const pool = state.inventario.filter(x=>x.variedad===p.variedad).sort((a,b)=>a.localizacion.localeCompare(b.localizacion));
+    let need=p.cant; for(let c of pool){ if(need<=0) break; const use=Math.min(c.cantidad,need); picks.push({id:c.id,loc:c.localizacion,var:c.variedad,use,edad:c.edadDias}); need-=use; }
+  })
+  // ordenar ruta por localización
+  picks.sort((a,b)=>a.loc.localeCompare(b.loc));
+  $('#po-route').innerHTML = picks.map((x,i)=>`<div class="step">${i+1}. ${x.loc} → ${x.var} (tomar ${x.use}) <span class="muted">${x.edad}d</span></div>`).join('');
+})
 
-        function selectImplementationType(type) {
-            if (!includeMindX) { mindxImplementationCost = 0; selectedImplementationType = ''; mindxImplementationHours = 0; calculateImplementationCosts(); return; }
-            document.querySelectorAll('.implementation-card').forEach(card => card.classList.remove('selected'));
-            document.getElementById(`implType${type}`).parentElement.classList.add('selected');
-            document.getElementById(`implType${type}`).checked = true;
-            document.getElementById('customImplementationSection').style.display = (type === 'D') ? 'block' : 'none';
-            calculateImplementationCosts();
-        }
+// --- Planeación ---
+function renderPlan(){
+  // Cobertura por variedad (consumo diario ficticio = 120 tallos/variedad)
+  const byVar = groupCount(state.inventario,'variedad'); const labels=Object.keys(byVar); const vals=Object.values(byVar).map(v=>Math.round(v/120));
+  drawBar($('#chart-cover'), labels, vals);
+  // Alertas min/max
+  const alerts = labels.map((l,i)=>({variedad:l, stock: Object.values(byVar)[i], min:300, max:1500}));
+  $('#plan-alerts').innerHTML = alerts.map(a=>{
+    const tag = a.stock<a.min? '<span class="pill bad">Reponer</span>': a.stock>a.max? '<span class="pill warn">Exceso</span>':'<span class="pill">OK</span>';
+    return `<div class="step">${a.variedad}: ${a.stock} tallos — ${tag}</div>`
+  }).join('');
+  // Forecast simple (caída 15% por día como proxy de ventas)
+  const base=sum(state.inventario,'cantidad'); const days=[...Array(7)].map((_,i)=>Math.round(base*Math.pow(0.85,i+1))); drawLine($('#chart-forecast'), ['D1','D2','D3','D4','D5','D6','D7'], days);
+}
 
-        function calculateImplementationCosts() {
-            let currentMindxImplementationCost = 0;
-            const selectedRadio = document.querySelector('input[name="implementationType"]:checked');
-            if (includeMindX) {
-                if (!selectedRadio) {
-                    currentMindxImplementationCost = 0; selectedImplementationType = 'No seleccionado'; mindxImplementationHours = 0;
-                } else {
-                    const [type, cost, hours, name] = selectedRadio.value.split('-');
-                    if (type === 'D') {
-                        const customHours = parseInt(document.getElementById('customHours').value) || 40;
-                        const hourlyRate = parseFloat(document.getElementById('hourlyRate').value) || 35;
-                        currentMindxImplementationCost = customHours * hourlyRate;
-                        mindxImplementationHours = customHours;
-                        selectedImplementationType = 'Custom';
-                    } else {
-                        currentMindxImplementationCost = parseFloat(cost);
-                        mindxImplementationHours = parseInt(hours);
-                        selectedImplementationType = name;
-                    }
-                }
-            } else {
-                currentMindxImplementationCost = 0;
-                selectedImplementationType = '';
-                mindxImplementationHours = 0;
-                document.querySelectorAll('input[name="implementationType"]').forEach(radio => {
-                    radio.checked = false;
-                });
-                document.getElementById('customImplementationSection').style.display = 'none';
-            }
-            mindxImplementationCost = currentMindxImplementationCost;
-            document.getElementById('mindxImplementationSubtotal').textContent = `${formatCurrency(mindxImplementationCost)} USD`;
-            updateTotalOneTimeImplementationCost();
-        }
+// --- Export CSV ---
+$('#btn-export').addEventListener('click',()=>{
+  const rows=[["ID","Variedad","Cantidad","Calidad","FechaRecepcion","EdadDias","Proveedor","Cliente","Localizacion"]].concat(state.inventario.map(x=>[x.id,x.variedad,x.cantidad,x.calidad,x.fechaRecepcion,x.edadDias,x.proveedor,x.cliente,x.localizacion]));
+  const csv=rows.map(r=>r.join(',')).join('\n'); const blob=new Blob([csv],{type:'text/csv'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='inventario.csv'; a.click(); URL.revokeObjectURL(url);
+})
 
-        function toggleSBCSection() {
-            includeSBC = document.getElementById('includeSBC').checked;
-            document.getElementById('sbcDetails').style.display = includeSBC ? 'block' : 'none';
-            calculateSBCCosts();
-            updateModuleDisplayLogic();
-        }
+// --- Simular tiempo real ---
+setInterval(()=>{
+  // Envejecimiento y recepciones/consumos aleatorios
+  state.inventario.forEach(x=>{ if(Math.random()<0.05) x.edadDias=Math.min(x.edadDias+1,9) });
+  if(Math.random()<0.6){ // recepción
+    const rec={ id:idCaja(), variedad:choice(variedades), cantidad:rand(80,220), calidad:["Alta","Media","Baja"][rand(0,2)], fechaRecepcion:fmtDate(new Date()), edadDias:0, proveedor:choice(proveedores), cliente:choice(clientes), localizacion:loc() };
+    state.inventario.push(rec); state.recepciones7d[state.recepciones7d.length-1].n++;
+  }
+  if(Math.random()<0.5 && state.inventario.length){ // salida
+    const i=rand(0,state.inventario.length-1); state.inventario[i].cantidad = Math.max(0, state.inventario[i].cantidad - rand(10,40)); if(state.inventario[i].cantidad===0) state.inventario.splice(i,1);
+  }
+  save(); renderAll();
+}, 4000);
 
-        function calculateSBCCosts() {
-            if (!includeSBC) {
-                sbcTotalOneTimeCost = 0;
-            } else {
-                sbcKhompQty = parseInt(document.getElementById('sbcKhompQty').value) || 0;
-                sbcAdditionalHoursQty = parseInt(document.getElementById('sbcAdditionalHoursQty').value) || 0;
-                let currentSbcCost = 0;
-                currentSbcCost += sbcKhompQty * SBC_PRICES['SBC KHOMP X 30 SESIONES Y SOPORTE 1Y'];
-                const trm = parseFloat(document.getElementById('trm').value) || TRM_DEFAULT;
-                const sbcAdditionalHoursCostCOP = sbcAdditionalHoursQty * SBC_PRICES['Hora de desarrollo / Implementación adicional SBC (COP)'];
-                const sbcAdditionalHoursCostUSD = sbcAdditionalHoursCostCOP / trm;
-                currentSbcCost += sbcAdditionalHoursCostUSD;
-                sbcTotalOneTimeCost = currentSbcCost;
-            }
-            document.getElementById('sbcKhompTotal').textContent = formatCurrency(sbcKhompQty * SBC_PRICES['SBC KHOMP X 30 SESIONES Y SOPORTE 1Y']);
-            const trm = parseFloat(document.getElementById('trm').value) || TRM_DEFAULT;
-            const sbcAdditionalHoursCostCOP = sbcAdditionalHoursQty * SBC_PRICES['Hora de desarrollo / Implementación adicional SBC (COP)'];
-            const sbcAdditionalHoursCostUSD = sbcAdditionalHoursCostCOP / trm;
-            document.getElementById('sbcAdditionalHoursTotal').textContent = formatCurrency(sbcAdditionalHoursCostUSD);
-            document.getElementById('sbcSubtotal').textContent = `${formatCurrency(sbcTotalOneTimeCost)} USD`;
-            updateTotalOneTimeImplementationCost();
-        }
+function renderAll(){ refreshKPI(); refreshCharts(); renderInventory(); renderRack(); renderPlan(); }
 
-        function updateTotalOneTimeImplementationCost() {
-            let totalCombinedImplementationCost = 0;
-            if (includeMindX) {
-                totalCombinedImplementationCost += mindxImplementationCost;
-            }
-            if (includeFive9) {
-                totalCombinedImplementationCost += FIVE9_PROFESSIONAL_SERVICES_COST;
-            }
-            if (includeSBC) {
-                totalCombinedImplementationCost += sbcTotalOneTimeCost;
-            }
-            document.getElementById('totalOneTimeImplementationCost').textContent = `${formatCurrency(totalCombinedImplementationCost)} USD`;
-        }
-
-        function updateSummaryPage() {
-            const trm = parseFloat(document.getElementById('trm').value) || TRM_DEFAULT;
-            let totalMonthlyRecurrent = 0;
-            if (includeFive9) totalMonthlyRecurrent += five9MonthlyCost;
-            if (includeMindX) {
-                totalMonthlyRecurrent += channelCost + packageCost + additionalInsightsCost + agentsCost + aiMonthlyCost + notificationCost;
-            }
-            let totalOneTimeCosts = 0;
-            if (includeFive9) totalOneTimeCosts += FIVE9_PROFESSIONAL_SERVICES_COST;
-            if (includeMindX) {
-                totalOneTimeCosts += mindxImplementationCost;
-                if (aiDetailsIncluded) totalOneTimeCosts += aiLoadingCost;
-            }
-            if (includeSBC) totalOneTimeCosts += sbcTotalOneTimeCost;
-            const totalAnnualUSD = (totalMonthlyRecurrent * 12) + totalOneTimeCosts;
-            const totalAnnualCOP = totalAnnualUSD * trm;
-            
-            const monthlyBody = document.getElementById('summaryMonthlyCostsBody');
-            monthlyBody.innerHTML = '';
-            if (includeFive9) {
-                if (five9AgentsQty > 0) monthlyBody.innerHTML += `<tr><td>VCC Agent Seat - Blended</td><td>${five9AgentsQty}</td><td class="cost-display">${formatCurrency(five9AgentsQty * FIVE9_PRICES['VCC Agent Seat - Blended'])}</td></tr>`;
-                if (five9SupervisorsQty > 0) monthlyBody.innerHTML += `<tr><td>VCC Supervisor</td><td>${five9SupervisorsQty}</td><td class="cost-display">${formatCurrency(five9SupervisorsQty * FIVE9_PRICES['VCC Supervisor'])}</td></tr>`;
-                if (five9AdminsQty > 0) monthlyBody.innerHTML += `<tr><td>VCC Administrator</td><td>${five9AdminsQty}</td><td class="cost-display">${formatCurrency(five9AdminsQty * FIVE9_PRICES['VCC Administrator'])}</td></tr>`;
-                if (five9ChatAgentQty > 0) monthlyBody.innerHTML += `<tr><td>Chat Agent</td><td>${five9ChatAgentQty}</td><td class="cost-display">${formatCurrency(five9ChatAgentQty * FIVE9_PRICES['Chat Agent'])}</td></tr>`;
-                if (five9EmailAgentQty > 0) monthlyBody.innerHTML += `<tr><td>Email Agent</td><td>${five9EmailAgentQty}</td><td class="cost-display">${formatCurrency(five9EmailAgentQty * FIVE9_PRICES['Email Agent'])}</td></tr>`;
-                if (five9NCX1Qty > 0) monthlyBody.innerHTML += `<tr><td>NCX1 Voice + Email + Adv. Chat</td><td>${five9NCX1Qty}</td><td class="cost-display">${formatCurrency(five9NCX1Qty * FIVE9_PRICES['NCX1 Voice + Email + Adv. Chat'])}</td></tr>`;
-                if (five9SIPInboundQty > 0) monthlyBody.innerHTML += `<tr><td>SIP Inbound Flat Rate</td><td>${five9SIPInboundQty}</td><td class="cost-display">${formatCurrency(five9SIPInboundQty * FIVE9_PRICES['SIP Inbound Flat Rate'])}</td></tr>`;
-                if (five9SIPOutboundQty > 0) monthlyBody.innerHTML += `<tr><td>SIP Outbound (No Backup)</td><td>${five9SIPOutboundQty}</td><td class="cost-display">${formatCurrency(five9SIPOutboundQty * FIVE9_PRICES['SIP Outbound (No Backup)'])}</td></tr>`;
-                if (five9RecStorageQty > 0) monthlyBody.innerHTML += `<tr><td>VCC Recording Storage - 2 Months</td><td>${five9RecStorageQty}</td><td class="cost-display">${formatCurrency(five9RecStorageQty * FIVE9_PRICES['VCC Recording Storage - 2 Months'])}</td></tr>`;
-                if (five9CallLogStorageQty > 0) monthlyBody.innerHTML += `<tr><td>VCC Call Log Storage - 3 Months</td><td>${five9CallLogStorageQty}</td><td class="cost-display">${formatCurrency(five9CallLogStorageQty * FIVE9_PRICES['VCC Call Log Storage - 3 Months'])}</td></tr>`;
-                if (five9SalesforceQty > 0) monthlyBody.innerHTML += `<tr><td>Salesforce Adapter</td><td>${five9SalesforceQty}</td><td class="cost-display">${formatCurrency(five9SalesforceQty * FIVE9_PRICES['Salesforce Adapter'])}</td></tr>`;
-                if (five9UCAdapterQty > 0) monthlyBody.innerHTML += `<tr><td>Five9 UC Adapter - MS Teams / Zoom</td><td>${five9UCAdapterQty}</td><td class="cost-display">${formatCurrency(five9UCAdapterQty * FIVE9_PRICES['Five9 UC Adapter - MS Teams / Zoom'])}</td></tr>`;
-                if (five9AgentAssistQty > 0) monthlyBody.innerHTML += `<tr><td>Agent Assist Standard</td><td>${five9AgentAssistQty}</td><td class="cost-display">${formatCurrency(five9AgentAssistQty * FIVE9_PRICES['Agent Assist Standard'])}</td></tr>`;
-            }
-            if (includeMindX) {
-                if (channelsSelected > 1) monthlyBody.innerHTML += `<tr><td>Canales Digitales Adicionales</td><td>${channelsSelected - 1} canal(es)</td><td class="cost-display">${formatCurrency(channelCost)}</td></tr>`;
-                if (packageCost > 0 || selectedPackageName) monthlyBody.innerHTML += `<tr><td>Paquete Conversaciones (${selectedPackageName})</td><td>${(packageConversations + additionalConversationsQty).toLocaleString('es-CO')} convers.</td><td class="cost-display">${formatCurrency(packageCost)}</td></tr>`;
-                if (additionalInsightsQty > 0) monthlyBody.innerHTML += `<tr><td>Dashboards MINDX Adicionales</td><td>${additionalInsightsQty}</td><td class="cost-display">${formatCurrency(additionalInsightsCost)}</td></tr>`;
-                if (agentsQty > 0) monthlyBody.innerHTML += `<tr><td>Agentes MindX</td><td>${agentsQty}</td><td class="cost-display">${formatCurrency(agentsCost)}</td></tr>`;
-                if (aiDetailsIncluded) {
-                    if (aiStorageCost > 0) monthlyBody.innerHTML += `<tr><td>IA - Almacenamiento Mensual</td><td>N/A</td><td class="cost-display">${formatCurrency(aiStorageCost)}</td></tr>`;
-                    if (aiUsageCost > 0) monthlyBody.innerHTML += `<tr><td>IA - Consumo Mensual</td><td>Estimado</td><td class="cost-display">${formatCurrency(aiUsageCost)}</td></tr>`;
-                }
-                if (totalNotificationsQty > 0) monthlyBody.innerHTML += `<tr><td>Notificaciones Outbound</td><td>${totalNotificationsQty.toLocaleString('es-CO')}</td><td class="cost-display">${formatCurrency(notificationCost)}</td></tr>`;
-            }
-            document.getElementById('summaryTotalMonthlyUSD').textContent = formatCurrency(totalMonthlyRecurrent);
-            document.getElementById('summaryTotalMonthlyCOP').textContent = formatCurrency(totalMonthlyRecurrent * trm, 'COP');
-            
-            const oneTimeBody = document.getElementById('summaryOneTimeCostsBody');
-            oneTimeBody.innerHTML = '';
-            if (includeFive9) oneTimeBody.innerHTML += `<tr><td>Servicios Profesionales Five9</td><td>${formatCurrency(FIVE9_PROFESSIONAL_SERVICES_COST)}</td><td>${formatCurrency(FIVE9_PROFESSIONAL_SERVICES_COST * trm, 'COP')}</td></tr>`;
-            if (mindxImplementationCost > 0) oneTimeBody.innerHTML += `<tr><td>Implementación MINDX (${selectedImplementationType})</td><td>${formatCurrency(mindxImplementationCost)}</td><td>${formatCurrency(mindxImplementationCost * trm, 'COP')}</td></tr>`;
-            if (includeMindX && aiDetailsIncluded && aiLoadingCost > 0) oneTimeBody.innerHTML += `<tr><td>IA - Carga de Conocimiento</td><td>${formatCurrency(aiLoadingCost)}</td><td>${formatCurrency(aiLoadingCost * trm, 'COP')}</td></tr>`;
-            if (includeSBC && sbcTotalOneTimeCost > 0) oneTimeBody.innerHTML += `<tr><td>Hardware y Servicios SBC</td><td>${formatCurrency(sbcTotalOneTimeCost)}</td><td>${formatCurrency(sbcTotalOneTimeCost * trm, 'COP')}</td></tr>`;
-            document.getElementById('summaryTotalOneTimeUSD').textContent = formatCurrency(totalOneTimeCosts);
-            document.getElementById('summaryTotalOneTimeCOP').textContent = formatCurrency(totalOneTimeCosts * trm, 'COP');
-
-            document.getElementById('summaryTotalAnnualUSD').textContent = formatCurrency(totalAnnualUSD, 'USD');
-            document.getElementById('summaryTotalAnnualCOP').textContent = formatCurrency(totalAnnualCOP, 'COP');
-            document.getElementById('summaryTrmValue').textContent = trm.toLocaleString('es-CO');
-        }
-
-        function confirmReset() {
-            if (confirm("¿Está seguro de que desea reiniciar la calculadora? Esta acción borrará todos los campos registrados y se reiniciará el cálculo.")) {
-                resetCalculator();
-            }
-        }
-
-        function resetCalculator() {
-            document.getElementById('includeMindX').checked = true;
-            document.getElementById('includeFive9').checked = false;
-            document.getElementById('five9Agents').value = 0;
-            document.getElementById('five9Supervisors').value = 0;
-            document.getElementById('five9Admins').value = 0;
-            document.getElementById('five9ChatAgent').value = 0;
-            document.getElementById('five9EmailAgent').value = 0;
-            document.getElementById('five9NCX1').value = 0;
-            document.getElementById('five9SIPInbound').value = 1;
-            document.getElementById('five9SIPOutbound').value = 1;
-            document.getElementById('five9RecStorage').value = 0;
-            document.getElementById('five9CallLogStorage').value = 0;
-            document.getElementById('five9Salesforce').value = 0;
-            document.getElementById('five9UCAdapter').value = 0;
-            document.getElementById('five9AgentAssist').value = 0;
-            document.querySelectorAll('#module1 input[type="checkbox"]').forEach(c => c.checked = false);
-            document.querySelectorAll('#module2 input[type="radio"]').forEach(r => r.checked = false);
-            document.getElementById('additionalConversations').value = 0;
-            document.getElementById('additionalInsights').value = 0;
-            document.getElementById('agentLicenses').value = 0;
-            document.getElementById('includeAI').checked = false;
-            document.getElementById('fileSize').value = 100;
-            document.getElementById('updateFrequency').value = '12';
-            document.getElementById('billingModel').value = 'messages';
-            document.getElementById('aiMessagesMsg').value = 3;
-            document.getElementById('aiMessagesTokens').value = 3;
-            document.getElementById('tokensPerMessage').value = 350;
-            document.getElementById('notifMarketingQty').value = 0;
-            document.getElementById('notifUtilityQty').value = 0;
-            document.getElementById('notifAuthenticationQty').value = 0;
-            document.querySelectorAll('#module7 input[name="implementationType"]').forEach(r => r.checked = false);
-            document.getElementById('customHours').value = 40;
-            document.getElementById('hourlyRate').value = 35;
-            document.getElementById('customImplementationSection').style.display = 'none';
-            document.getElementById('includeSBC').checked = false;
-            document.getElementById('sbcKhompQty').value = 0;
-            document.getElementById('sbcAdditionalHoursQty').value = 0;
-            document.getElementById('trm').value = TRM_DEFAULT;
-            handleProductSelection();
-            calculateChannelCosts();
-            calculatePackageCosts();
-            calculateInsightsCosts();
-            calculateAgentCosts();
-            toggleAISection();
-            calculateNotificationCosts();
-            selectImplementationType('');
-            toggleSBCSection();
-            goToStep(0);
-        }
-
-        document.addEventListener('DOMContentLoaded', () => {
-            const mainContent = document.querySelector('.main-content');
-            const navList = document.querySelector('.navbar-nav');
-            
-            const modules = [
-                { title: 'Producto', id: 'module0' },
-                { title: 'Canales', id: 'module1' },
-                { title: 'Conversaciones', id: 'module2' },
-                { title: 'Dashboards', id: 'module3' },
-                { title: 'Agentes', id: 'module4' },
-                { title: 'IA', id: 'module5' },
-                { title: 'Notificaciones', id: 'module6' },
-                { title: 'Implementación', id: 'module7' },
-                { title: 'Resumen', id: 'module8' }
-            ];
-
-            modules.forEach((module, index) => {
-                const navItem = document.createElement('li');
-                navItem.className = 'nav-item';
-                const navLink = document.createElement('a');
-                navLink.className = `nav-link ${index === 0 ? 'active' : ''}`;
-                navLink.href = '#';
-                navLink.textContent = module.title;
-                navLink.onclick = (e) => { e.preventDefault(); goToStep(index); };
-                if (index > 0) {
-                    navLink.id = index === 8 ? 'summaryNavLink' : `navLink${index}`;
-                    navLink.style.display = 'none';
-                }
-                navItem.appendChild(navLink);
-                navList.appendChild(navItem);
-            });
-            
-            resetCalculator();
-        });
-    </script>
+// Población inicial de selects y renderizado
+(function init(){
+  renderAll();
+})();
+</script>
 </body>
 </html>
