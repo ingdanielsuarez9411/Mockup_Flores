@@ -3,7 +3,9 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Inventario de Flores — Mockup</title>
+<title>Inventario de Flores — Dashboard (Interactivo)</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3"></script>
 <style>
   :root{
     --bg:#0f172a; /* slate-900 */
@@ -23,7 +25,7 @@
   html,body{height:100%}
   body{margin:0;background:linear-gradient(180deg,var(--bg),#0a1222);color:var(--text);font:14px/1.45 system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",Arial}
   .app{display:grid;grid-template-rows:auto 1fr;min-height:100vh}
-  header{display:flex;align-items:center;gap:16px;padding:14px 18px;border-bottom:1px solid var(--border);backdrop-filter:blur(6px);position:sticky;top:0;background:rgba(10,18,34,.75)}
+  header{display:flex;align-items:center;gap:16px;padding:14px 18px;border-bottom:1px solid var(--border);backdrop-filter:blur(6px);position:sticky;top:0;background:rgba(10,18,34,.75);z-index:5}
   header h1{font-size:18px;margin:0 8px 0 0;letter-spacing:.3px}
   .tag{padding:4px 8px;border:1px solid var(--border);border-radius:999px;color:var(--sub)}
   .tabs{display:flex;gap:8px;margin-left:auto}
@@ -68,6 +70,8 @@
   .route{display:flex;flex-direction:column;gap:6px}
   .route .step{padding:8px;border:1px solid #243349;border-radius:10px;background:#0b1220}
   .toast{position:fixed;right:16px;bottom:16px;background:#0b1220;border:1px solid #21324a;padding:12px 14px;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,.35);display:none}
+  /* Alturas dedicadas para gráficos responsive */
+  .chart-box{position:relative;height:260px}
 </style>
 </head>
 <body>
@@ -106,27 +110,42 @@
         </div>
       </div>
 
+      <div class="card" style="margin-top:14px">
+        <div class="head">
+          <span>Filtros del Dashboard</span>
+          <div class="row">
+            <input id="filtro" placeholder="Filtrar por variedad / proveedor / cliente / ubicación" size="34" />
+            <select id="f-calidad"><option value="">Calidad (todas)</option><option>Alta</option><option>Media</option><option>Baja</option></select>
+            <select id="f-edad"><option value="">Edad (todas)</option><option value="1">0–1</option><option value="3">2–3</option><option value="5">4–5</option><option value="6">6+</option></select>
+            <select id="f-var-multi" multiple size="1" title="Variedades"> </select>
+            <label style="display:flex;align-items:center;gap:6px"><input type="checkbox" id="chk-sync" checked> Aplicar filtros a tablas y gráficos</label>
+          </div>
+        </div>
+      </div>
+
       <div class="grid cols-3" style="margin-top:14px">
         <div class="card">
-          <div class="head"><span>Stock por variedad</span><div class="legend" id="legend-var"></div></div>
-          <div class="body"><canvas id="chart-variedad" height="220"></canvas></div>
+          <div class="head"><span>Stock por variedad</span><span class="muted">clic para filtrar tabla</span></div>
+          <div class="body"><div class="chart-box"><canvas id="chart-variedad"></canvas></div></div>
         </div>
         <div class="card">
           <div class="head"><span>Distribución por edad</span><span class="muted">0–1 / 2–3 / 4–5 / 6+ días</span></div>
-          <div class="body"><canvas id="chart-edad" height="220"></canvas></div>
+          <div class="body"><div class="chart-box"><canvas id="chart-edad"></canvas></div></div>
         </div>
         <div class="card">
-          <div class="head"><span>Recepciones últimos 7 días</span><span class="muted" id="rec-range"></span></div>
-          <div class="body"><canvas id="chart-recepciones" height="220"></canvas></div>
+          <div class="head"><span>Recepciones (rango)</span>
+            <div class="row">
+              <input type="date" id="rx-from">
+              <input type="date" id="rx-to">
+            </div>
+          </div>
+          <div class="body"><div class="chart-box"><canvas id="chart-recepciones"></canvas></div></div>
         </div>
       </div>
 
       <div class="card" style="margin-top:14px">
         <div class="head"><span>Inventario en tiempo real</span>
           <div class="row">
-            <input id="filtro" placeholder="Filtrar por variedad / proveedor / cliente / ubicación" size="48" />
-            <select id="f-calidad"><option value="">Calidad (todas)</option><option>Alta</option><option>Media</option><option>Baja</option></select>
-            <select id="f-edad"><option value="">Edad (todas)</option><option value="1">0–1</option><option value="3">2–3</option><option value="5">4–5</option><option value="6">6+</option></select>
             <button class="primary" id="btn-export">Exportar CSV</button>
           </div>
         </div>
@@ -231,7 +250,7 @@
       <div class="grid cols-3">
         <div class="card">
           <div class="head"><span>Cobertura por variedad</span><span class="muted">días al ritmo actual</span></div>
-          <div class="body"><canvas id="chart-cover" height="220"></canvas></div>
+          <div class="body"><div class="chart-box"><canvas id="chart-cover"></canvas></div></div>
         </div>
         <div class="card">
           <div class="head"><span>Alertas de reabastecimiento</span><span class="muted">min/máx</span></div>
@@ -239,7 +258,7 @@
         </div>
         <div class="card">
           <div class="head"><span>Proyección de salida</span><span class="muted">7 días</span></div>
-          <div class="body"><canvas id="chart-forecast" height="220"></canvas></div>
+          <div class="body"><div class="chart-box"><canvas id="chart-forecast"></canvas></div></div>
         </div>
       </div>
     </section>
@@ -293,7 +312,6 @@ for(let i=6;i>=0;i--){ state.recepciones7d.push({d:fmtDate(fechaDiasAtras(i)), n
 if(localStorage.getItem('inv_data')){
   try{ state.inventario = JSON.parse(localStorage.getItem('inv_data')) }catch(e){}
 }
-
 function save(){ localStorage.setItem('inv_data', JSON.stringify(state.inventario)) }
 
 // --- UI helpers ---
@@ -316,26 +334,33 @@ const headCells = $$('#tabla-inv thead th[data-k]');
 headCells.forEach(th=>{
   th.style.cursor='pointer';
   th.addEventListener('click',()=>{
-    const k=th.dataset.k; state.sortKey=k; state.sortAsc = state.sortKey===k ? !state.sortAsc : true; renderInventory()
+    const k=th.dataset.k; const toggle = state.sortKey===k ? !state.sortAsc : true; state.sortKey=k; state.sortAsc = toggle; renderInventory()
   })
 })
 
-function renderInventory(){
+function getFilteredInventory(){
   const term = $('#filtro').value.toLowerCase();
   const cal = $('#f-calidad').value; const edad = $('#f-edad').value;
+  const selVar = Array.from($('#f-var-multi').selectedOptions).map(o=>o.value);
   let rows = state.inventario.filter(x=>{
     const hit = (x.id+x.variedad+x.proveedor+x.cliente+x.localizacion).toLowerCase().includes(term);
     const okCal = !cal || x.calidad===cal;
     const okEdad = !edad || (edad==1? x.edadDias<=1 : edad==3? x.edadDias>=2 && x.edadDias<=3 : edad==5? x.edadDias>=4 && x.edadDias<=5 : x.edadDias>=6);
-    return hit && okCal && okEdad;
+    const okVar = !selVar.length || selVar.includes(x.variedad);
+    return hit && okCal && okEdad && okVar;
   })
+  return rows;
+}
+
+function renderInventory(){
+  const rows = $('#chk-sync').checked ? getFilteredInventory() : [...state.inventario];
   rows.sort((a,b)=>{
     const k=state.sortKey; let va=a[k], vb=b[k];
     if(k==='fechaRecepcion'){va=new Date(va);vb=new Date(vb)}
     if(va<vb) return state.sortAsc?-1:1; if(va>vb) return state.sortAsc?1:-1; return 0;
   })
   tbody.innerHTML = rows.map(x=>{
-    const rot = x.edadDias>=6?'<span class="pill bad">Urgente</span>': x.edadDias>=4?'<span class="pill warn">Prioridad</span>':'<span class="pill">Normal</span>'
+    const rot = x.edadDias>=6?'\n      <span class="pill bad">Urgente</span>': x.edadDias>=4?'\n      <span class="pill warn">Prioridad</span>':'\n      <span class="pill">Normal</span>'
     return `<tr>
       <td>${x.id}</td><td>${x.variedad}</td><td>${x.cantidad}</td><td>${x.calidad}</td>
       <td>${x.fechaRecepcion}</td><td>${x.edadDias}</td><td>${x.proveedor}</td><td>${x.cliente}</td><td>${x.localizacion}</td><td>${rot}</td>
@@ -345,55 +370,96 @@ function renderInventory(){
   $('#last-ts').textContent = nowTS();
 }
 ['keyup','change'].forEach(ev=>{
-  $('#filtro').addEventListener(ev,renderInventory);
-  $('#f-calidad').addEventListener(ev,renderInventory);
-  $('#f-edad').addEventListener(ev,renderInventory);
+  $('#filtro').addEventListener(ev,()=>{ if($('#chk-sync').checked){ renderAll() } else { renderInventory() } });
+  $('#f-calidad').addEventListener(ev,()=>{ if($('#chk-sync').checked){ renderAll() } else { renderInventory() } });
+  $('#f-edad').addEventListener(ev,()=>{ if($('#chk-sync').checked){ renderAll() } else { renderInventory() } });
+  $('#f-var-multi').addEventListener(ev,()=>{ if($('#chk-sync').checked){ renderAll() } else { renderInventory() } });
 });
 
-// --- KPI y Charts (vanilla Canvas) ---
+// --- KPI helpers ---
 function sum(arr,k){return arr.reduce((a,b)=>a+(k?b[k]:b),0)}
 function avg(arr,k){return arr.length?sum(arr,k)/arr.length:0}
-function groupCount(arr,k){const m={};arr.forEach(x=>m[x[k]]=(m[x[k]]||0)+x.cantidad);return m}
-function bucketsEdad(arr){const b={"0–1":0,"2–3":0,"4–5":0,"6+":0};arr.forEach(x=>{if(x.edadDias<=1)b["0–1"]+=x.cantidad;else if(x.edadDias<=3)b["2–3"]+=x.cantidad;else if(x.edadDias<=5)b["4–5"]+=x.cantidad;else b["6+"]+=x.cantidad});return b}
-
-function drawBar(canvas, labels, values){
-  const ctx=canvas.getContext('2d'); const W=canvas.width=canvas.clientWidth, H=canvas.height=220;
-  ctx.clearRect(0,0,W,H); const max=Math.max(...values,10); const pad=32; const bw=(W-pad*2)/values.length*0.7; const gap=(W-pad*2)/values.length-bw; let x=pad;
-  ctx.strokeStyle='#20324b'; ctx.beginPath(); for(let y=H-40;y>20;y-=40){ctx.moveTo(pad,y);ctx.lineTo(W-pad,y)} ctx.stroke();
-  values.forEach((v,i)=>{ const h=(H-60)*v/max; ctx.fillStyle=`hsl(${(i*55)%360} 70% 60%)`; ctx.fillRect(x,H-40-h,bw,h); ctx.fillStyle='#a7b0c2'; ctx.fillText(labels[i], x, H-22); x+=bw+gap; })
+function groupCount(arr,k,weight='cantidad'){
+  const m={};arr.forEach(x=>m[x[k]]=(m[x[k]]||0)+x[weight]);return m
 }
-function drawDonut(canvas, labels, values){
-  const ctx=canvas.getContext('2d'); const W=canvas.width=canvas.clientWidth, H=canvas.height=220; const cx=W/2, cy=H/2; const r=Math.min(W,H)/2-16; const ir=r*0.55; const total=sum(values);
-  ctx.clearRect(0,0,W,H); let a=-Math.PI/2; values.forEach((v,i)=>{ const ang=total? (v/total)*Math.PI*2 : 0; ctx.beginPath(); ctx.moveTo(cx,cy); ctx.arc(cx,cy,r,a,a+ang); ctx.closePath(); ctx.fillStyle=`hsl(${(i*75)%360} 70% 60%)`; ctx.fill(); a+=ang;});
-  // agujero
-  ctx.globalCompositeOperation='destination-out'; ctx.beginPath(); ctx.arc(cx,cy,ir,0,Math.PI*2); ctx.fill(); ctx.globalCompositeOperation='source-over';
-  ctx.fillStyle='#a7b0c2'; ctx.textAlign='center'; ctx.fillText(total+" tallos",cx,cy+4);
-}
-function drawLine(canvas, labels, values){
-  const ctx=canvas.getContext('2d'); const W=canvas.width=canvas.clientWidth, H=canvas.height=220; ctx.clearRect(0,0,W,H);
-  const pad=32; const max=Math.max(...values,10); const xs=(W-pad*2)/(values.length-1), ys=(H-60)/max; ctx.strokeStyle='#20324b'; ctx.beginPath(); for(let y=H-40;y>20;y-=40){ctx.moveTo(pad,y);ctx.lineTo(W-pad,y)} ctx.stroke();
-  ctx.beginPath(); ctx.moveTo(pad, H-40-values[0]*ys); for(let i=1;i<values.length;i++){ ctx.lineTo(pad+i*xs, H-40-values[i]*ys) } ctx.strokeStyle='rgba(167,139,250,.95)'; ctx.lineWidth=2; ctx.stroke();
-  // puntos
-  for(let i=0;i<values.length;i++){ ctx.beginPath(); ctx.arc(pad+i*xs, H-40-values[i]*ys, 3, 0, Math.PI*2); ctx.fillStyle='#22d3ee'; ctx.fill(); }
+function bucketsEdad(arr){
+  const b={"0–1":0,"2–3":0,"4–5":0,"6+":0};
+  arr.forEach(x=>{if(x.edadDias<=1)b["0–1"]+=x.cantidad;else if(x.edadDias<=3)b["2–3"]+=x.cantidad;else if(x.edadDias<=5)b["4–5"]+=x.cantidad;else b["6+"]+=x.cantidad});
+  return b
 }
 
 function refreshKPI(){
-  $('#kpi-tallos').textContent = sum(state.inventario,'cantidad').toLocaleString();
-  $('#kpi-cajas').textContent = state.inventario.length;
-  $('#kpi-edad').textContent = avg(state.inventario,'edadDias').toFixed(1);
-  $('#kpi-riesgo').textContent = state.inventario.filter(x=>x.edadDias>=5).length;
+  const rows = $('#chk-sync').checked ? getFilteredInventory() : state.inventario;
+  $('#kpi-tallos').textContent = sum(rows,'cantidad').toLocaleString();
+  $('#kpi-cajas').textContent = rows.length;
+  $('#kpi-edad').textContent = avg(rows,'edadDias').toFixed(1);
+  $('#kpi-riesgo').textContent = rows.filter(x=>x.edadDias>=5).length;
   $('#tallos-ts').textContent = nowTS();
 }
 
-function refreshCharts(){
-  const byVar = groupCount(state.inventario,'variedad');
-  const labels1 = Object.keys(byVar), values1 = Object.values(byVar);
-  drawBar($('#chart-variedad'), labels1, values1);
-  // leyenda
-  $('#legend-var').innerHTML = labels1.map((l,i)=>`<span class="item"><span class="sw" style="background:hsl(${(i*55)%360} 70% 60%)"></span>${l}</span>`).join("");
+// --- CHARTS (Chart.js) ---
+let chartVar, chartEdad, chartRx, chartCover, chartForecast;
+const gridColor = '#20324b';
+const tickColor = '#a7b0c2';
 
-  const buck = bucketsEdad(state.inventario); drawDonut($('#chart-edad'), Object.keys(buck), Object.values(buck));
-  const lbl = state.recepciones7d.map(x=>x.d.slice(5)); const val = state.recepciones7d.map(x=>x.n); drawLine($('#chart-recepciones'), lbl, val); $('#rec-range').textContent=`${state.recepciones7d[0].d} a ${state.recepciones7d.at(-1).d}`;
+function buildOrUpdate(chartRef, ctx, config){
+  if(chartRef && chartRef instanceof Chart){
+    chartRef.data = config.data; chartRef.options = config.options; chartRef.update(); return chartRef;
+  }
+  return new Chart(ctx, config);
+}
+
+function refreshCharts(){
+  const rows = $('#chk-sync').checked ? getFilteredInventory() : state.inventario;
+  const byVar = groupCount(rows,'variedad');
+  const labels1 = Object.keys(byVar), values1 = Object.values(byVar);
+
+  chartVar = buildOrUpdate(chartVar, document.getElementById('chart-variedad').getContext('2d'), {
+    type:'bar',
+    data:{ labels: labels1, datasets:[{ label:'Tallos', data: values1 }] },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      scales:{ x:{ ticks:{ color:tickColor }, grid:{ display:false } }, y:{ ticks:{ color:tickColor }, grid:{ color:gridColor } } },
+      plugins:{ legend:{ display:false }, tooltip:{ enabled:true } },
+      onClick:(evt, els)=>{
+        if(!els.length) return; const i = els[0].index; const v = labels1[i];
+        // Al hacer clic, fijamos filtro de variedad y sincronizamos
+        for(const opt of $('#f-var-multi').options){ opt.selected = (opt.value===v) }
+        $('#chk-sync').checked = true; renderAll();
+      }
+    }
+  });
+
+  const buck = bucketsEdad(rows); const l2 = Object.keys(buck), v2 = Object.values(buck);
+  chartEdad = buildOrUpdate(chartEdad, document.getElementById('chart-edad').getContext('2d'), {
+    type:'doughnut',
+    data:{ labels:l2, datasets:[{ data:v2 }] },
+    options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{ position:'bottom', labels:{ color:tickColor } }, tooltip:{ enabled:true } }, cutout:'60%'}
+  });
+
+  // Recepciones por rango (a partir de state.recepciones7d)
+  const from = $('#rx-from').value || state.recepciones7d[0].d;
+  const to = $('#rx-to').value || state.recepciones7d.at(-1).d;
+  const serie = state.recepciones7d.filter(x=>x.d>=from && x.d<=to);
+  const lbl = serie.map(x=>x.d.slice(5)); const val = serie.map(x=>x.n);
+  chartRx = buildOrUpdate(chartRx, document.getElementById('chart-recepciones').getContext('2d'), {
+    type:'line',
+    data:{ labels:lbl, datasets:[{ label:'Recepciones', data:val, tension:.35, pointRadius:3 }] },
+    options:{ responsive:true, maintainAspectRatio:false, scales:{ x:{ ticks:{ color:tickColor }, grid:{ color:gridColor } }, y:{ ticks:{ color:tickColor }, grid:{ color:gridColor } } }, plugins:{ legend:{ display:false } } }
+  });
+  $('#rx-from').setAttribute('min', state.recepciones7d[0].d); $('#rx-from').setAttribute('max', state.recepciones7d.at(-1).d);
+  $('#rx-to').setAttribute('min', state.recepciones7d[0].d); $('#rx-to').setAttribute('max', state.recepciones7d.at(-1).d);
+
+  // PLANEACIÓN charts
+  const byVarAll = groupCount(rows,'variedad'); const labelsC = Object.keys(byVarAll); const valsC = Object.values(byVarAll).map(v=>Math.round(v/120));
+  chartCover = buildOrUpdate(chartCover, document.getElementById('chart-cover').getContext('2d'), {
+    type:'bar', data:{ labels:labelsC, datasets:[{ label:'Días de cobertura', data:valsC }] }, options:{ responsive:true, maintainAspectRatio:false, scales:{ x:{ ticks:{ color:tickColor } }, y:{ ticks:{ color:tickColor } } }, plugins:{ legend:{ display:false } } }
+  });
+
+  const base=sum(rows,'cantidad'); const days=[...Array(7)].map((_,i)=>Math.round(base*Math.pow(0.85,i+1)));
+  chartForecast = buildOrUpdate(chartForecast, document.getElementById('chart-forecast').getContext('2d'), {
+    type:'line', data:{ labels:['D1','D2','D3','D4','D5','D6','D7'], datasets:[{ label:'Stock proyectado', data:days, tension:.35, pointRadius:3 }] }, options:{ responsive:true, maintainAspectRatio:false, scales:{ x:{ ticks:{ color:tickColor } }, y:{ ticks:{ color:tickColor } } }, plugins:{ legend:{ display:false } } }
+  });
 }
 
 // --- Recepción ---
@@ -415,7 +481,6 @@ $('#rx-add').addEventListener('click',()=>{
 function renderRack(){
   const el = $('#rack'); el.innerHTML='';
   const slots = {}; state.inventario.forEach(x=>slots[x.localizacion]=x);
-  // construir 6x? por simplicidad 6x16 visibles
   const visible = []; for(let z of zonas){ for(let i=1;i<=3;i++){ for(let j=1;j<=6;j++){ visible.push(`${z}${i}-${String(j).padStart(2,'0')}`) } } }
   visible.forEach(code=>{
     const div = document.createElement('div'); div.className='slot';
@@ -424,7 +489,6 @@ function renderRack(){
     if(item){ if(item.edadDias>=6) div.classList.add('risk'); else if(item.edadDias>=4) div.classList.add('oldest'); }
     el.appendChild(div);
   })
-  // lista FEFO (top 8 más viejos)
   const top = [...state.inventario].sort((a,b)=>b.edadDias-a.edadDias).slice(0,8);
   $('#fefo-list').innerHTML = top.map(x=>`<div class="step">${x.variedad} — ${x.cantidad} tallos · <b>${x.edadDias}d</b> · ${x.localizacion}</div>`).join('');
 }
@@ -436,40 +500,35 @@ $('#po-add').addEventListener('click',()=>{
 })
 function renderPO(){ $('#po-items').innerHTML = state.pedidos.map((x,i)=>`<div class="step">${i+1}. ${x.variedad} — ${x.cant} tallos <span class="muted">(${x.cliente})</span></div>`).join('') }
 $('#po-opt').addEventListener('click',()=>{
-  // asignar ubicaciones más cercanas (simples: tomar cajas de esa variedad, ordenar por localización alfanumérica)
   const picks=[]; state.pedidos.forEach(p=>{
     const pool = state.inventario.filter(x=>x.variedad===p.variedad).sort((a,b)=>a.localizacion.localeCompare(b.localizacion));
     let need=p.cant; for(let c of pool){ if(need<=0) break; const use=Math.min(c.cantidad,need); picks.push({id:c.id,loc:c.localizacion,var:c.variedad,use,edad:c.edadDias}); need-=use; }
   })
-  // ordenar ruta por localización
   picks.sort((a,b)=>a.loc.localeCompare(b.loc));
   $('#po-route').innerHTML = picks.map((x,i)=>`<div class="step">${i+1}. ${x.loc} → ${x.var} (tomar ${x.use}) <span class="muted">${x.edad}d</span></div>`).join('');
 })
 
 // --- Planeación ---
 function renderPlan(){
-  // Cobertura por variedad (consumo diario ficticio = 120 tallos/variedad)
-  const byVar = groupCount(state.inventario,'variedad'); const labels=Object.keys(byVar); const vals=Object.values(byVar).map(v=>Math.round(v/120));
-  drawBar($('#chart-cover'), labels, vals);
+  const rows = $('#chk-sync').checked ? getFilteredInventory() : state.inventario;
+  const byVar = groupCount(rows,'variedad'); const labels=Object.keys(byVar); const vals=Object.values(byVar).map(v=>Math.round(v/120));
   // Alertas min/max
   const alerts = labels.map((l,i)=>({variedad:l, stock: Object.values(byVar)[i], min:300, max:1500}));
   $('#plan-alerts').innerHTML = alerts.map(a=>{
     const tag = a.stock<a.min? '<span class="pill bad">Reponer</span>': a.stock>a.max? '<span class="pill warn">Exceso</span>':'<span class="pill">OK</span>';
     return `<div class="step">${a.variedad}: ${a.stock} tallos — ${tag}</div>`
   }).join('');
-  // Forecast simple (caída 15% por día como proxy de ventas)
-  const base=sum(state.inventario,'cantidad'); const days=[...Array(7)].map((_,i)=>Math.round(base*Math.pow(0.85,i+1))); drawLine($('#chart-forecast'), ['D1','D2','D3','D4','D5','D6','D7'], days);
 }
 
 // --- Export CSV ---
 $('#btn-export').addEventListener('click',()=>{
-  const rows=[["ID","Variedad","Cantidad","Calidad","FechaRecepcion","EdadDias","Proveedor","Cliente","Localizacion"]].concat(state.inventario.map(x=>[x.id,x.variedad,x.cantidad,x.calidad,x.fechaRecepcion,x.edadDias,x.proveedor,x.cliente,x.localizacion]));
+  const src = $('#chk-sync').checked ? getFilteredInventory() : state.inventario;
+  const rows=[["ID","Variedad","Cantidad","Calidad","FechaRecepcion","EdadDias","Proveedor","Cliente","Localizacion"]].concat(src.map(x=>[x.id,x.variedad,x.cantidad,x.calidad,x.fechaRecepcion,x.edadDias,x.proveedor,x.cliente,x.localizacion]));
   const csv=rows.map(r=>r.join(',')).join('\n'); const blob=new Blob([csv],{type:'text/csv'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='inventario.csv'; a.click(); URL.revokeObjectURL(url);
 })
 
 // --- Simular tiempo real ---
 setInterval(()=>{
-  // Envejecimiento y recepciones/consumos aleatorios
   state.inventario.forEach(x=>{ if(Math.random()<0.05) x.edadDias=Math.min(x.edadDias+1,9) });
   if(Math.random()<0.6){ // recepción
     const rec={ id:idCaja(), variedad:choice(variedades), cantidad:rand(80,220), calidad:["Alta","Media","Baja"][rand(0,2)], fechaRecepcion:fmtDate(new Date()), edadDias:0, proveedor:choice(proveedores), cliente:choice(clientes), localizacion:loc() };
@@ -485,6 +544,11 @@ function renderAll(){ refreshKPI(); refreshCharts(); renderInventory(); renderRa
 
 // Población inicial de selects y renderizado
 (function init(){
+  // Popular multiselect de variedades
+  const m=$('#f-var-multi'); variedades.forEach(v=>{ const o=document.createElement('option'); o.value=o.textContent=v; m.appendChild(o); });
+  // Inicializar fechas de recepciones
+  $('#rx-from').value = state.recepciones7d[0].d; $('#rx-to').value = state.recepciones7d.at(-1).d;
+  $('#rx-from').addEventListener('change', refreshCharts); $('#rx-to').addEventListener('change', refreshCharts);
   renderAll();
 })();
 </script>
