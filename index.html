@@ -1,556 +1,480 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Inventario de Flores — Dashboard (Interactivo)</title>
-<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3"></script>
-<style>
-  :root{
-    --bg:#0f172a; /* slate-900 */
-    --panel:#111827; /* gray-900 */
-    --muted:#1f2937; /* gray-800 */
-    --card:#0b1220; /* custom */
-    --primary:#22d3ee; /* cyan-400 */
-    --accent:#a78bfa; /* violet-400 */
-    --ok:#34d399; /* green-400 */
-    --warn:#f59e0b; /* amber-500 */
-    --danger:#ef4444; /* red-500 */
-    --text:#e5e7eb; /* gray-200 */
-    --sub:#9ca3af; /* gray-400 */
-    --border:#1f2937;
-  }
-  *{box-sizing:border-box}
-  html,body{height:100%}
-  body{margin:0;background:linear-gradient(180deg,var(--bg),#0a1222);color:var(--text);font:14px/1.45 system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",Arial}
-  .app{display:grid;grid-template-rows:auto 1fr;min-height:100vh}
-  header{display:flex;align-items:center;gap:16px;padding:14px 18px;border-bottom:1px solid var(--border);backdrop-filter:blur(6px);position:sticky;top:0;background:rgba(10,18,34,.75);z-index:5}
-  header h1{font-size:18px;margin:0 8px 0 0;letter-spacing:.3px}
-  .tag{padding:4px 8px;border:1px solid var(--border);border-radius:999px;color:var(--sub)}
-  .tabs{display:flex;gap:8px;margin-left:auto}
-  .tab{border:1px solid var(--border);background:var(--panel);color:var(--sub);padding:8px 12px;border-radius:12px;cursor:pointer}
-  .tab.active{background:linear-gradient(180deg,var(--panel),#0b1326);color:var(--text);border-color:#263042}
-  main{padding:18px;}
-  .grid{display:grid;gap:14px}
-  .grid.cols-4{grid-template-columns:repeat(4,1fr)}
-  .grid.cols-3{grid-template-columns:repeat(3,1fr)}
-  .grid.cols-2{grid-template-columns:repeat(2,1fr)}
-  @media (max-width:1200px){.grid.cols-4{grid-template-columns:repeat(2,1fr)}}
-  @media (max-width:800px){.grid.cols-3,.grid.cols-2{grid-template-columns:1fr}}
-  .card{background:linear-gradient(180deg,var(--panel),#0b1326);border:1px solid var(--border);border-radius:16px;box-shadow:0 10px 30px rgba(0,0,0,.25)}
-  .card .head{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border-bottom:1px solid var(--border)}
-  .card .body{padding:14px}
-  .kpi{display:flex;align-items:center;gap:12px}
-  .kpi .dot{width:8px;height:8px;border-radius:50%}
-  .kpi .value{font-size:24px;font-weight:700}
-  .muted{color:var(--sub)}
-  .row{display:flex;gap:8px;flex-wrap:wrap}
-  input,select,button{background:#0b1220;color:var(--text);border:1px solid #223047;border-radius:10px;padding:8px 10px}
-  input::placeholder{color:#6b7280}
-  button.primary{background:linear-gradient(180deg,#19304e,#0c233f);border-color:#26415e}
-  button.good{background:linear-gradient(180deg,#103924,#0b2b1b);border-color:#1c4b33}
-  table{width:100%;border-collapse:collapse}
-  th,td{border-bottom:1px solid #1e2a3d;padding:8px;text-align:left}
-  th{color:#a5b4fc}
-  tr:hover{background:#0b162a}
-  .pill{padding:4px 8px;border-radius:999px;border:1px solid #21324a;color:#a7f3d0;background:#0b1f1a}
-  .pill.warn{border-color:#3a2a12;background:#1f160a;color:#fde68a}
-  .pill.bad{border-color:#3a1919;background:#1f0b0b;color:#fecaca}
-  .legend{display:flex;gap:10px;flex-wrap:wrap}
-  .legend .item{display:flex;align-items:center;gap:6px}
-  .legend .sw{width:10px;height:10px;border-radius:2px}
-  .rack{display:grid;grid-template-columns:repeat(6,1fr);gap:8px}
-  .slot{background:#0b1220;border:1px dashed #243349;border-radius:10px;min-height:64px;display:flex;align-items:center;justify-content:center;color:#9aa7bd;position:relative}
-  .slot .badge{position:absolute;top:6px;left:6px;font-size:10px;color:#9aa7bd}
-  .slot.oldest{outline:2px solid var(--warn)}
-  .slot.risk{outline:2px solid var(--danger)}
-  .toolbar{display:flex;gap:8px;align-items:center;margin-bottom:10px}
-  .statusbar{display:flex;gap:12px;align-items:center;color:var(--sub);font-size:12px}
-  .route{display:flex;flex-direction:column;gap:6px}
-  .route .step{padding:8px;border:1px solid #243349;border-radius:10px;background:#0b1220}
-  .toast{position:fixed;right:16px;bottom:16px;background:#0b1220;border:1px solid #21324a;padding:12px 14px;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,.35);display:none}
-  /* Alturas dedicadas para gráficos responsive */
-  .chart-box{position:relative;height:260px}
-</style>
+    <meta charset="UTF-8">
+    <title>Flower Processing Digital Twin - Full Process</title>
+    <style>
+        body { margin: 0; overflow: hidden; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #0b0f19; color: white; user-select: none; }
+        canvas { display: block; }
+        .panel { background: rgba(20, 30, 50, 0.9); border: 1px solid #2e4a7a; padding: 12px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); position: absolute; }
+        
+        #currentView { top: 20px; left: 20px; width: 180px; }
+        #mouseControl { bottom: 20px; right: 20px; font-size: 12px; }
+        #mouseControl b { color: #38bdf8; display: block; margin-bottom: 5px; }
+        .status-ok { color: #4ade80; font-weight: bold; }
+        .status-loading { color: #fbbf24; font-weight: bold; }
+        .status-error { color: #f87171; font-weight: bold; }
+
+        /* Simulación de la Tableta del Operario */
+        #tabletUI { top: 50%; left: 50%; transform: translate(-50%, -50%); width: 300px; display: none; border: 2px solid #38bdf8; background: #0f172a; z-index: 10; }
+        #tabletUI h3 { margin: 0 0 10px 0; color: #38bdf8; text-align: center; border-bottom: 1px solid #1e293b; padding-bottom: 5px; }
+        .tablet-row { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 5px; border-bottom: 1px dashed #334155; padding-bottom: 2px;}
+
+        .label { color: white; font-size: 12px; background: rgba(0,0,0,0.6); padding: 2px 6px; border-radius: 4px; border: 1px solid #38bdf8; pointer-events: none; white-space: nowrap; }
+    </style>
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+            }
+        }
+    </script>
 </head>
 <body>
-<div class="app">
-  <header>
-    <h1>🌺 Inventario de Flores</h1>
-    <span class="tag">FEFO activo</span>
-    <span class="tag">Cuarto frío 2–4°C</span>
-    <div class="tabs" id="tabs">
-      <button class="tab active" data-tab="dash">Dashboard</button>
-      <button class="tab" data-tab="recepcion">Recepción</button>
-      <button class="tab" data-tab="almacen">Almacenamiento</button>
-      <button class="tab" data-tab="picking">Picking</button>
-      <button class="tab" data-tab="planeacion">Planeación</button>
+    <div id="currentView" class="panel">
+        <div style="text-align: center; color: #cbd5e1; font-size: 11px; margin-bottom:5px; border-bottom: 1px solid #333;">Digital Twin System</div>
+        <div style="font-size: 11px; color: #94a3b8; margin-top:5px;">Fase del Proceso:</div>
+        <div id="phaseStatus" style="font-size: 12px; color: #38bdf8; font-weight: bold;">Iniciando...</div>
+        <div style="font-size: 10px; color: #94a3b8; margin-top:8px;">Cajas en Planta: <span id="plantBoxesCount">0</span>/12</div>
+        <div style="font-size: 10px; color: #f87171;">Rechazadas: <span id="rejectedCount">0</span></div>
     </div>
-  </header>
-  <main>
-    <!-- DASHBOARD -->
-    <section id="view-dash" class="view">
-      <div class="grid cols-4">
-        <div class="card">
-          <div class="head"><span>Total tallos</span><span class="muted" id="tallos-ts"></span></div>
-          <div class="body"><div class="kpi"><span class="dot" style="background:var(--primary)"></span><span class="value" id="kpi-tallos">—</span></div><div class="muted">Sumatoria por cajas</div></div>
-        </div>
-        <div class="card">
-          <div class="head"><span>Cajas</span><span class="muted">en bodega</span></div>
-          <div class="body"><div class="kpi"><span class="dot" style="background:var(--accent)"></span><span class="value" id="kpi-cajas">—</span></div><div class="muted">Activas en inventario</div></div>
-        </div>
-        <div class="card">
-          <div class="head"><span>Edad promedio</span><span class="muted">días</span></div>
-          <div class="body"><div class="kpi"><span class="dot" style="background:var(--ok)"></span><span class="value" id="kpi-edad">—</span></div><div class="muted">Objetivo &lt; 3 días</div></div>
-        </div>
-        <div class="card">
-          <div class="head"><span>Riesgo caducidad</span><span class="muted">&gt;= 5 días</span></div>
-          <div class="body"><div class="kpi"><span class="dot" style="background:var(--danger)"></span><span class="value" id="kpi-riesgo">—</span></div><div class="muted">Acciones FEFO y ofertas flash</div></div>
-        </div>
-      </div>
+    
+    <div id="mouseControl" class="panel">
+        <b>Controles:</b>
+        <div>🖱️ Click izq + arrastrar · Rotar</div>
+        <div>🖱️ Rueda · Zoom</div>
+        <div>🖱️ Click der + arrastrar · Mover</div>
+    </div>
 
-      <div class="card" style="margin-top:14px">
-        <div class="head">
-          <span>Filtros del Dashboard</span>
-          <div class="row">
-            <input id="filtro" placeholder="Filtrar por variedad / proveedor / cliente / ubicación" size="34" />
-            <select id="f-calidad"><option value="">Calidad (todas)</option><option>Alta</option><option>Media</option><option>Baja</option></select>
-            <select id="f-edad"><option value="">Edad (todas)</option><option value="1">0–1</option><option value="3">2–3</option><option value="5">4–5</option><option value="6">6+</option></select>
-            <select id="f-var-multi" multiple size="1" title="Variedades"> </select>
-            <label style="display:flex;align-items:center;gap:6px"><input type="checkbox" id="chk-sync" checked> Aplicar filtros a tablas y gráficos</label>
-          </div>
-        </div>
-      </div>
+    <div id="tabletUI" class="panel">
+        <h3>📱 Tableta Recepción</h3>
+        <div class="tablet-row"><span>Orden:</span> <span>#PO-8842</span></div>
+        <div class="tablet-row"><span>Origen:</span> <span>Fincas Falcom</span></div>
+        <div class="tablet-row"><span>Esperadas:</span> <span>12 u</span></div>
+        <div class="tablet-row"><span>Leídas RFID:</span> <span id="scannedBoxes">0</span></div>
+        <div style="text-align: center; margin-top: 10px;" id="matchStatus" class="status-loading">Verificando...</div>
+    </div>
 
-      <div class="grid cols-3" style="margin-top:14px">
-        <div class="card">
-          <div class="head"><span>Stock por variedad</span><span class="muted">clic para filtrar tabla</span></div>
-          <div class="body"><div class="chart-box"><canvas id="chart-variedad"></canvas></div></div>
-        </div>
-        <div class="card">
-          <div class="head"><span>Distribución por edad</span><span class="muted">0–1 / 2–3 / 4–5 / 6+ días</span></div>
-          <div class="body"><div class="chart-box"><canvas id="chart-edad"></canvas></div></div>
-        </div>
-        <div class="card">
-          <div class="head"><span>Recepciones (rango)</span>
-            <div class="row">
-              <input type="date" id="rx-from">
-              <input type="date" id="rx-to">
-            </div>
-          </div>
-          <div class="body"><div class="chart-box"><canvas id="chart-recepciones"></canvas></div></div>
-        </div>
-      </div>
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+        import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
 
-      <div class="card" style="margin-top:14px">
-        <div class="head"><span>Inventario en tiempo real</span>
-          <div class="row">
-            <button class="primary" id="btn-export">Exportar CSV</button>
-          </div>
-        </div>
-        <div class="body">
-          <div class="statusbar"><span id="inv-count">—</span><span>• Última actualización:</span><span id="last-ts">—</span></div>
-          <div style="overflow:auto;max-height:360px">
-            <table id="tabla-inv">
-              <thead><tr>
-                <th data-k="id">ID Caja</th>
-                <th data-k="variedad">Variedad</th>
-                <th data-k="cantidad">Cantidad</th>
-                <th data-k="calidad">Calidad</th>
-                <th data-k="fechaRecepcion">Fecha Recepción</th>
-                <th data-k="edadDias">Edad (d)</th>
-                <th data-k="proveedor">Proveedor</th>
-                <th data-k="cliente">Cliente</th>
-                <th data-k="localizacion">Localización</th>
-                <th>Rotación</th>
-              </tr></thead>
-              <tbody></tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-    </section>
+        // --- CONFIGURACIÓN BÁSICA ---
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x0a101f);
+        scene.fog = new THREE.FogExp2(0x0a101f, 0.0012);
 
-    <!-- RECEPCIÓN -->
-    <section id="view-recepcion" class="view" style="display:none">
-      <div class="grid cols-2">
-        <div class="card">
-          <div class="head"><span>Escaneo / Ingreso de cajas</span><span class="muted">QR / Código</span></div>
-          <div class="body">
-            <div class="toolbar">
-              <input id="rx-code" placeholder="ID Caja (ej. CX1234)" />
-              <select id="rx-variedad"></select>
-              <input id="rx-cant" type="number" min="1" placeholder="Cantidad" style="width:110px" />
-              <select id="rx-calidad"><option>Alta</option><option>Media</option><option>Baja</option></select>
-              <input id="rx-prov" placeholder="Proveedor" />
-              <input id="rx-cli" placeholder="Cliente" />
-              <select id="rx-loc"></select>
-              <button class="good" id="rx-add">Agregar</button>
-            </div>
-            <div class="statusbar" id="rx-status">Listo para escanear</div>
-          </div>
-        </div>
-        <div class="card">
-          <div class="head"><span>Últimos ingresos</span><span class="muted">5 recientes</span></div>
-          <div class="body">
-            <div style="max-height:260px;overflow:auto">
-              <table id="rx-table"><thead><tr><th>Hora</th><th>ID</th><th>Variedad</th><th>Cant.</th><th>Ubicación</th></tr></thead><tbody></tbody></table>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
+        const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 1000);
+        // Cámara posicionada para ver mejor la planta principal
+        camera.position.set(-100, 150, 180); 
+        camera.lookAt(-50,0,0);
 
-    <!-- ALMACENAMIENTO -->
-    <section id="view-almacen" class="view" style="display:none">
-      <div class="grid cols-2">
-        <div class="card">
-          <div class="head"><span>Mapa de estantes</span><span class="muted">Zonas A–D</span></div>
-          <div class="body">
-            <div class="rack" id="rack"></div>
-          </div>
-        </div>
-        <div class="card">
-          <div class="head"><span>Sugerencias FEFO</span><span class="muted">Recoja primero…</span></div>
-          <div class="body">
-            <div class="route" id="fefo-list"></div>
-          </div>
-        </div>
-      </div>
-    </section>
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.shadowMap.enabled = true; // Activar sombras para más realismo
+        document.body.appendChild(renderer.domElement);
 
-    <!-- PICKING -->
-    <section id="view-picking" class="view" style="display:none">
-      <div class="grid cols-2">
-        <div class="card">
-          <div class="head"><span>Crear orden de picking</span><span class="muted">Optimiza ruta por ubicación</span></div>
-          <div class="body">
-            <div class="toolbar">
-              <input id="po-cliente" placeholder="Cliente pedido" />
-              <select id="po-var"></select>
-              <input id="po-cant" type="number" min="1" placeholder="Cantidad tallos" style="width:140px" />
-              <button class="primary" id="po-add">Agregar ítem</button>
-              <button id="po-opt">Optimizar ruta</button>
-            </div>
-            <div class="route" id="po-items"></div>
-          </div>
-        </div>
-        <div class="card">
-          <div class="head"><span>Ruta sugerida</span><span class="muted">Orden por localización</span></div>
-          <div class="body">
-            <div class="route" id="po-route"></div>
-          </div>
-        </div>
-      </div>
-    </section>
+        const labelRenderer = new CSS2DRenderer();
+        labelRenderer.setSize(window.innerWidth, window.innerHeight);
+        labelRenderer.domElement.style.position = 'absolute';
+        labelRenderer.domElement.style.top = '0px';
+        labelRenderer.domElement.style.pointerEvents = 'none';
+        document.body.appendChild(labelRenderer.domElement);
 
-    <!-- PLANEACIÓN -->
-    <section id="view-planeacion" class="view" style="display:none">
-      <div class="grid cols-3">
-        <div class="card">
-          <div class="head"><span>Cobertura por variedad</span><span class="muted">días al ritmo actual</span></div>
-          <div class="body"><div class="chart-box"><canvas id="chart-cover"></canvas></div></div>
-        </div>
-        <div class="card">
-          <div class="head"><span>Alertas de reabastecimiento</span><span class="muted">min/máx</span></div>
-          <div class="body"><div id="plan-alerts" class="route"></div></div>
-        </div>
-        <div class="card">
-          <div class="head"><span>Proyección de salida</span><span class="muted">7 días</span></div>
-          <div class="body"><div class="chart-box"><canvas id="chart-forecast"></canvas></div></div>
-        </div>
-      </div>
-    </section>
-  </main>
-</div>
-<div class="toast" id="toast"></div>
-<script>
-// --- Datos simulados y utilidades ---
-const variedades = ["Rosa Roja","Clavel Blanco","Alstroemeria","Girasol","Hortensia","Crisantemo"];
-const proveedores = ["Finca Primavera","Bella Flor","Los Andes","La Rivera"]; 
-const clientes = ["Mayorista Bogotá","Exportación Miami","Retail Medellín","Online Cali"];
-const zonas = ["A","B","C","D"]; // estantes A–D
+        const controls = new OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.target.set(-40, 0, 0);
 
-const state = {
-  inventario: [],
-  recepciones7d: [],
-  pedidos: [],
-  sortKey: 'fechaRecepcion',
-  sortAsc: false
-};
+        // --- ILUMINACIÓN ---
+        scene.add(new THREE.AmbientLight(0xffffff, 0.4));
+        const dirLight = new THREE.DirectionalLight(0xffffff, 1.2);
+        dirLight.position.set(50, 200, 100);
+        dirLight.castShadow = true;
+        dirLight.shadow.camera.top = 150;
+        dirLight.shadow.camera.bottom = -150;
+        dirLight.shadow.camera.left = -150;
+        dirLight.shadow.camera.right = 150;
+        scene.add(dirLight);
 
-function rand(a,b){return Math.floor(Math.random()*(b-a+1))+a}
-function choice(arr){return arr[rand(0,arr.length-1)]}
-function fechaDiasAtras(d){const x=new Date();x.setDate(x.getDate()-d);x.setHours(9,rand(0,59),0,0);return x}
-function fmtDate(d){const x=new Date(d);return x.toISOString().slice(0,10)}
-function nowTS(){const x=new Date();return x.toLocaleString()}
-function idCaja(){return `CX${rand(1000,9999)}`}
-function loc(){return `${choice(zonas)}${rand(1,4)}-${String(rand(1,24)).padStart(2,'0')}`}
+        // --- ENTORNO ---
+        const floorGeo = new THREE.PlaneGeometry(400, 300);
+        const floorMat = new THREE.MeshStandardMaterial({ color: 0x111827, roughness: 0.9, metalness: 0.1 });
+        const floor = new THREE.Mesh(floorGeo, floorMat);
+        floor.rotation.x = -Math.PI / 2;
+        floor.receiveShadow = true;
+        scene.add(floor);
+        
+        const grid = new THREE.GridHelper(400, 80, 0x1e293b, 0x1e293b);
+        grid.position.y = 0.1;
+        scene.add(grid);
 
-// Generar inventario inicial
-for(let i=0;i<120;i++){
-  const edad = rand(0,7);
-  const fecha = fechaDiasAtras(edad);
-  state.inventario.push({
-    id: idCaja(),
-    variedad: choice(variedades),
-    cantidad: rand(80,260),
-    calidad: ["Alta","Media","Baja"][rand(0,2)],
-    fechaRecepcion: fmtDate(fecha),
-    edadDias: edad,
-    proveedor: choice(proveedores),
-    cliente: choice(clientes),
-    localizacion: loc()
-  })
-}
+        // --- UTILIDADES ---
+        function createLabel(text, position, parent, offset = new THREE.Vector3(0,0,0)) {
+            const div = document.createElement('div');
+            div.className = 'label';
+            div.textContent = text;
+            const label = new CSS2DObject(div);
+            label.position.copy(position).add(offset);
+            parent.add(label);
+            return label;
+        }
 
-// Recepciones por día (7 días)
-for(let i=6;i>=0;i--){ state.recepciones7d.push({d:fmtDate(fechaDiasAtras(i)), n: rand(6,22)}) }
+        function createHumanoid(color) {
+            const group = new THREE.Group();
+            const mat = new THREE.MeshStandardMaterial({ color: color });
+            const head = new THREE.Mesh(new THREE.SphereGeometry(1.5), mat);
+            head.position.y = 5;
+            head.castShadow = true;
+            const body = new THREE.Mesh(new THREE.BoxGeometry(2.5, 3.5, 1.5), mat);
+            body.position.y = 2.5;
+            body.castShadow = true;
+            group.add(head, body);
+            return group;
+        }
 
-// Persistencia sencilla
-if(localStorage.getItem('inv_data')){
-  try{ state.inventario = JSON.parse(localStorage.getItem('inv_data')) }catch(e){}
-}
-function save(){ localStorage.setItem('inv_data', JSON.stringify(state.inventario)) }
+        // --- PLANTA PRINCIPAL (Izquierda) ---
+        const mainPlantGroup = new THREE.Group();
+        mainPlantGroup.position.set(-80, 0, 0);
+        scene.add(mainPlantGroup);
 
-// --- UI helpers ---
-const $ = s=>document.querySelector(s);
-const $$ = s=>Array.from(document.querySelectorAll(s));
-function toast(msg){const t=$('#toast');t.textContent=msg;t.style.display='block';setTimeout(()=>t.style.display='none',2500)}
+        // Base y Estructura
+        const mainBase = new THREE.Mesh(new THREE.BoxGeometry(140, 2, 100), new THREE.MeshStandardMaterial({ color: 0x2c3e50 }));
+        mainBase.position.y = 1;
+        mainBase.receiveShadow = true;
+        mainPlantGroup.add(mainBase);
+        
+        const mainStructure = new THREE.Mesh(new THREE.BoxGeometry(138, 25, 98), new THREE.MeshStandardMaterial({ color: 0x0ea5e9, transparent: true, opacity: 0.15, wireframe: false, side: THREE.DoubleSide }));
+        mainStructure.position.y = 13.5;
+        mainPlantGroup.add(mainStructure);
+        createLabel("Planta Principal - Procesamiento", new THREE.Vector3(0, 28, 0), mainPlantGroup);
 
-// --- Tabs ---
-$('#tabs').addEventListener('click',e=>{
-  if(!e.target.matches('.tab'))return;
-  $$('.tab').forEach(b=>b.classList.remove('active')); e.target.classList.add('active');
-  const tab = e.target.dataset.tab;
-  $$('.view').forEach(v=>v.style.display='none');
-  $('#view-'+(tab==='dash'?'dash':tab)).style.display='block';
-})
+        // NUEVO: Bandas Transportadoras (Recepción a Calidad)
+        const beltMat = new THREE.MeshStandardMaterial({ color: 0x475569, roughness: 0.8 });
+        for(let i=-1; i<=1; i++) {
+             const belt = new THREE.Mesh(new THREE.BoxGeometry(60, 1, 4), beltMat);
+             belt.position.set(10, 2.5, i * 8 + 35); // Posicionadas en la zona de recepción
+             belt.receiveShadow = true;
+             mainPlantGroup.add(belt);
+        }
+        createLabel("Descarga & Bandas", new THREE.Vector3(30, 10, 35), mainPlantGroup);
 
-// --- Tabla Inventario (Dashboard) ---
-const tbody = document.querySelector('#tabla-inv tbody');
-const headCells = $$('#tabla-inv thead th[data-k]');
-headCells.forEach(th=>{
-  th.style.cursor='pointer';
-  th.addEventListener('click',()=>{
-    const k=th.dataset.k; const toggle = state.sortKey===k ? !state.sortAsc : true; state.sortKey=k; state.sortAsc = toggle; renderInventory()
-  })
-})
+        // NUEVO: Área de Calidad (QC)
+        const qcStationMat = new THREE.MeshStandardMaterial({color: 0xf59e0b, metalness: 0.7, roughness: 0.2});
+        const qcArch = new THREE.Mesh(new THREE.TorusGeometry(5, 0.5, 16, 32, Math.PI), qcStationMat);
+        qcArch.position.set(-10, 3, 35); // Sobre la banda central
+        qcArch.rotation.y = Math.PI/2;
+        mainPlantGroup.add(qcArch);
 
-function getFilteredInventory(){
-  const term = $('#filtro').value.toLowerCase();
-  const cal = $('#f-calidad').value; const edad = $('#f-edad').value;
-  const selVar = Array.from($('#f-var-multi').selectedOptions).map(o=>o.value);
-  let rows = state.inventario.filter(x=>{
-    const hit = (x.id+x.variedad+x.proveedor+x.cliente+x.localizacion).toLowerCase().includes(term);
-    const okCal = !cal || x.calidad===cal;
-    const okEdad = !edad || (edad==1? x.edadDias<=1 : edad==3? x.edadDias>=2 && x.edadDias<=3 : edad==5? x.edadDias>=4 && x.edadDias<=5 : x.edadDias>=6);
-    const okVar = !selVar.length || selVar.includes(x.variedad);
-    return hit && okCal && okEdad && okVar;
-  })
-  return rows;
-}
+        const qcInspector = createHumanoid(0xffff00); // Amarillo intenso para QC
+        qcInspector.position.set(-10, 2, 42);
+        qcInspector.rotation.y = Math.PI;
+        mainPlantGroup.add(qcInspector);
+        createLabel("Estación de Calidad (QC)", new THREE.Vector3(-10, 12, 35), mainPlantGroup);
+        const rejectArea = new THREE.Mesh(new THREE.CircleGeometry(5), new THREE.MeshBasicMaterial({color: 0xff0000, transparent: true, opacity: 0.3}));
+        rejectArea.rotation.x = -Math.PI/2;
+        rejectArea.position.set(-15, 2.1, 50);
+        mainPlantGroup.add(rejectArea);
+        createLabel("Zona Rechazo", new THREE.Vector3(-15, 5, 50), mainPlantGroup);
 
-function renderInventory(){
-  const rows = $('#chk-sync').checked ? getFilteredInventory() : [...state.inventario];
-  rows.sort((a,b)=>{
-    const k=state.sortKey; let va=a[k], vb=b[k];
-    if(k==='fechaRecepcion'){va=new Date(va);vb=new Date(vb)}
-    if(va<vb) return state.sortAsc?-1:1; if(va>vb) return state.sortAsc?1:-1; return 0;
-  })
-  tbody.innerHTML = rows.map(x=>{
-    const rot = x.edadDias>=6?'\n      <span class="pill bad">Urgente</span>': x.edadDias>=4?'\n      <span class="pill warn">Prioridad</span>':'\n      <span class="pill">Normal</span>'
-    return `<tr>
-      <td>${x.id}</td><td>${x.variedad}</td><td>${x.cantidad}</td><td>${x.calidad}</td>
-      <td>${x.fechaRecepcion}</td><td>${x.edadDias}</td><td>${x.proveedor}</td><td>${x.cliente}</td><td>${x.localizacion}</td><td>${rot}</td>
-    </tr>`
-  }).join('');
-  $('#inv-count').textContent = `${rows.length} cajas visibles`;
-  $('#last-ts').textContent = nowTS();
-}
-['keyup','change'].forEach(ev=>{
-  $('#filtro').addEventListener(ev,()=>{ if($('#chk-sync').checked){ renderAll() } else { renderInventory() } });
-  $('#f-calidad').addEventListener(ev,()=>{ if($('#chk-sync').checked){ renderAll() } else { renderInventory() } });
-  $('#f-edad').addEventListener(ev,()=>{ if($('#chk-sync').checked){ renderAll() } else { renderInventory() } });
-  $('#f-var-multi').addEventListener(ev,()=>{ if($('#chk-sync').checked){ renderAll() } else { renderInventory() } });
-});
 
-// --- KPI helpers ---
-function sum(arr,k){return arr.reduce((a,b)=>a+(k?b[k]:b),0)}
-function avg(arr,k){return arr.length?sum(arr,k)/arr.length:0}
-function groupCount(arr,k,weight='cantidad'){
-  const m={};arr.forEach(x=>m[x[k]]=(m[x[k]]||0)+x[weight]);return m
-}
-function bucketsEdad(arr){
-  const b={"0–1":0,"2–3":0,"4–5":0,"6+":0};
-  arr.forEach(x=>{if(x.edadDias<=1)b["0–1"]+=x.cantidad;else if(x.edadDias<=3)b["2–3"]+=x.cantidad;else if(x.edadDias<=5)b["4–5"]+=x.cantidad;else b["6+"]+=x.cantidad});
-  return b
-}
+        // NUEVO: Área de Picking (Estanterías)
+        const shelfMat = new THREE.MeshStandardMaterial({ color: 0x64748b });
+        const shelfGeo = new THREE.BoxGeometry(5, 20, 40);
+        for(let i=0; i<3; i++) {
+            const shelf = new THREE.Mesh(shelfGeo, shelfMat);
+            shelf.position.set(-50 + (i*15), 11, 0);
+            shelf.castShadow = true;
+            mainPlantGroup.add(shelf);
+        }
+        createLabel("Área de Picking / Almacén", new THREE.Vector3(-50, 25, 0), mainPlantGroup);
 
-function refreshKPI(){
-  const rows = $('#chk-sync').checked ? getFilteredInventory() : state.inventario;
-  $('#kpi-tallos').textContent = sum(rows,'cantidad').toLocaleString();
-  $('#kpi-cajas').textContent = rows.length;
-  $('#kpi-edad').textContent = avg(rows,'edadDias').toFixed(1);
-  $('#kpi-riesgo').textContent = rows.filter(x=>x.edadDias>=5).length;
-  $('#tallos-ts').textContent = nowTS();
-}
+        // Operario de Recepción (inicial)
+        const receiverWorker = createHumanoid(0x38bdf8);
+        receiverWorker.position.set(40, 2, 30);
+        mainPlantGroup.add(receiverWorker);
 
-// --- CHARTS (Chart.js) ---
-let chartVar, chartEdad, chartRx, chartCover, chartForecast;
-const gridColor = '#20324b';
-const tickColor = '#a7b0c2';
 
-function buildOrUpdate(chartRef, ctx, config){
-  if(chartRef && chartRef instanceof Chart){
-    chartRef.data = config.data; chartRef.options = config.options; chartRef.update(); return chartRef;
-  }
-  return new Chart(ctx, config);
-}
+        // --- FINCAS FALCOM (Derecha - Origen) ---
+        const falcomGroup = new THREE.Group();
+        falcomGroup.position.set(100, 0, -30);
+        scene.add(falcomGroup);
 
-function refreshCharts(){
-  const rows = $('#chk-sync').checked ? getFilteredInventory() : state.inventario;
-  const byVar = groupCount(rows,'variedad');
-  const labels1 = Object.keys(byVar), values1 = Object.values(byVar);
+        const falcomBase = new THREE.Mesh(new THREE.BoxGeometry(60, 2, 40), new THREE.MeshStandardMaterial({ color: 0x573c2c }));
+        falcomBase.position.y = 1;
+        falcomGroup.add(falcomBase);
+        createLabel("Fincas Falcom (Origen)", new THREE.Vector3(0, 15, 0), falcomGroup);
 
-  chartVar = buildOrUpdate(chartVar, document.getElementById('chart-variedad').getContext('2d'), {
-    type:'bar',
-    data:{ labels: labels1, datasets:[{ label:'Tallos', data: values1 }] },
-    options:{
-      responsive:true, maintainAspectRatio:false,
-      scales:{ x:{ ticks:{ color:tickColor }, grid:{ display:false } }, y:{ ticks:{ color:tickColor }, grid:{ color:gridColor } } },
-      plugins:{ legend:{ display:false }, tooltip:{ enabled:true } },
-      onClick:(evt, els)=>{
-        if(!els.length) return; const i = els[0].index; const v = labels1[i];
-        // Al hacer clic, fijamos filtro de variedad y sincronizamos
-        for(const opt of $('#f-var-multi').options){ opt.selected = (opt.value===v) }
-        $('#chk-sync').checked = true; renderAll();
-      }
-    }
-  });
+        const printer = new THREE.Mesh(new THREE.BoxGeometry(5, 4, 5), new THREE.MeshStandardMaterial({ color: 0x333333 }));
+        printer.position.set(-15, 3, 0);
+        falcomGroup.add(printer);
+        const conveyorFalcom = new THREE.Mesh(new THREE.BoxGeometry(25, 0.5, 4), new THREE.MeshStandardMaterial({ color: 0x555555 }));
+        conveyorFalcom.position.set(0, 2.5, 0);
+        falcomGroup.add(conveyorFalcom);
 
-  const buck = bucketsEdad(rows); const l2 = Object.keys(buck), v2 = Object.values(buck);
-  chartEdad = buildOrUpdate(chartEdad, document.getElementById('chart-edad').getContext('2d'), {
-    type:'doughnut',
-    data:{ labels:l2, datasets:[{ data:v2 }] },
-    options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{ position:'bottom', labels:{ color:tickColor } }, tooltip:{ enabled:true } }, cutout:'60%'}
-  });
+        const falcomWorker1 = createHumanoid(0xf97316); // Naranja
+        falcomWorker1.position.set(-15, 2, 5);
+        falcomGroup.add(falcomWorker1);
 
-  // Recepciones por rango (a partir de state.recepciones7d)
-  const from = $('#rx-from').value || state.recepciones7d[0].d;
-  const to = $('#rx-to').value || state.recepciones7d.at(-1).d;
-  const serie = state.recepciones7d.filter(x=>x.d>=from && x.d<=to);
-  const lbl = serie.map(x=>x.d.slice(5)); const val = serie.map(x=>x.n);
-  chartRx = buildOrUpdate(chartRx, document.getElementById('chart-recepciones').getContext('2d'), {
-    type:'line',
-    data:{ labels:lbl, datasets:[{ label:'Recepciones', data:val, tension:.35, pointRadius:3 }] },
-    options:{ responsive:true, maintainAspectRatio:false, scales:{ x:{ ticks:{ color:tickColor }, grid:{ color:gridColor } }, y:{ ticks:{ color:tickColor }, grid:{ color:gridColor } } }, plugins:{ legend:{ display:false } } }
-  });
-  $('#rx-from').setAttribute('min', state.recepciones7d[0].d); $('#rx-from').setAttribute('max', state.recepciones7d.at(-1).d);
-  $('#rx-to').setAttribute('min', state.recepciones7d[0].d); $('#rx-to').setAttribute('max', state.recepciones7d.at(-1).d);
+        // --- CAMIÓN ---
+        const truck = new THREE.Group();
+        const cab = new THREE.Mesh(new THREE.BoxGeometry(7, 7, 8), new THREE.MeshStandardMaterial({ color: 0xffffff }));
+        cab.position.set(-7, 4.5, 0);
+        cab.castShadow = true;
+        const trailer = new THREE.Mesh(new THREE.BoxGeometry(16, 9, 9), new THREE.MeshStandardMaterial({ color: 0xd1d5db }));
+        trailer.position.set(5, 5.5, 0);
+        trailer.castShadow = true;
+        truck.add(cab, trailer);
+        scene.add(truck);
+        
+        const posFalcom = new THREE.Vector3(110, 0, 0);
+        const posMain = new THREE.Vector3(-35, 0, 35); // Punto de llegada a bandas
+        truck.position.copy(posFalcom);
 
-  // PLANEACIÓN charts
-  const byVarAll = groupCount(rows,'variedad'); const labelsC = Object.keys(byVarAll); const valsC = Object.values(byVarAll).map(v=>Math.round(v/120));
-  chartCover = buildOrUpdate(chartCover, document.getElementById('chart-cover').getContext('2d'), {
-    type:'bar', data:{ labels:labelsC, datasets:[{ label:'Días de cobertura', data:valsC }] }, options:{ responsive:true, maintainAspectRatio:false, scales:{ x:{ ticks:{ color:tickColor } }, y:{ ticks:{ color:tickColor } } }, plugins:{ legend:{ display:false } } }
-  });
 
-  const base=sum(rows,'cantidad'); const days=[...Array(7)].map((_,i)=>Math.round(base*Math.pow(0.85,i+1)));
-  chartForecast = buildOrUpdate(chartForecast, document.getElementById('chart-forecast').getContext('2d'), {
-    type:'line', data:{ labels:['D1','D2','D3','D4','D5','D6','D7'], datasets:[{ label:'Stock proyectado', data:days, tension:.35, pointRadius:3 }] }, options:{ responsive:true, maintainAspectRatio:false, scales:{ x:{ ticks:{ color:tickColor } }, y:{ ticks:{ color:tickColor } } }, plugins:{ legend:{ display:false } } }
-  });
-}
+        // --- VARIABLES DE SIMULACIÓN ---
+        let simState = 0;
+        // Estados:
+        // 0: Producción Falcom
+        // 1: Viaje Camión
+        // 2: Recepción (Tableta)
+        // 3: Descarga a Bandas y Control de Calidad
+        // 4: Almacenamiento en Picking
+        // 5: Reset
 
-// --- Recepción ---
-const rxVarSel = $('#rx-variedad'); variedades.forEach(v=>{const o=document.createElement('option');o.textContent=v;rxVarSel.appendChild(o)});
-const rxLocSel = $('#rx-loc'); (function(){ for(let z of zonas){ for(let i=1;i<=4;i++){ for(let j=1;j<=24;j++){ const o=document.createElement('option'); o.textContent=`${z}${i}-${String(j).padStart(2,'0')}`; rxLocSel.appendChild(o) } } } })();
+        let timer = 0;
+        let boxesInTruck = 0;
+        const expectedBoxes = 12; // Total de cajas para la demo
+        const rejectionIndex = 3; // La 4ta caja (índice 3) será rechazada
+        
+        let boxesFalcom = [];
+        let boxesPlant = []; // Cajas en proceso en la planta principal
+        let rejectedCount = 0;
+        let processedInPlantCount = 0;
 
-function pushRxRow(x){
-  const tr = document.createElement('tr');
-  tr.innerHTML = `<td>${new Date().toLocaleTimeString()}</td><td>${x.id}</td><td>${x.variedad}</td><td>${x.cantidad}</td><td>${x.localizacion}</td>`;
-  const tb = $('#rx-table tbody'); tb.prepend(tr); while(tb.children.length>5) tb.removeChild(tb.lastChild);
-}
+        // UI Elements
+        const uiPhase = document.getElementById('phaseStatus');
+        const tabletUI = document.getElementById('tabletUI');
+        const uiScanned = document.getElementById('scannedBoxes');
+        const uiMatch = document.getElementById('matchStatus');
+        const uiPlantCount = document.getElementById('plantBoxesCount');
+        const uiRejected = document.getElementById('rejectedCount');
 
-$('#rx-add').addEventListener('click',()=>{
-  const rec={ id:($('#rx-code').value||idCaja()).toUpperCase(), variedad:$('#rx-variedad').value, cantidad:parseInt($('#rx-cant').value||rand(80,200)), calidad:$('#rx-calidad').value, fechaRecepcion:fmtDate(new Date()), edadDias:0, proveedor:$('#rx-prov').value||choice(proveedores), cliente:$('#rx-cli').value||choice(clientes), localizacion:$('#rx-loc').value||loc() };
-  state.inventario.unshift(rec); save(); pushRxRow(rec); renderAll(); toast(`Caja ${rec.id} ingresada`); $('#rx-status').textContent=`Agregada ${rec.id} → ${rec.localizacion}`;
-})
 
-// --- Almacenamiento (rack) ---
-function renderRack(){
-  const el = $('#rack'); el.innerHTML='';
-  const slots = {}; state.inventario.forEach(x=>slots[x.localizacion]=x);
-  const visible = []; for(let z of zonas){ for(let i=1;i<=3;i++){ for(let j=1;j<=6;j++){ visible.push(`${z}${i}-${String(j).padStart(2,'0')}`) } } }
-  visible.forEach(code=>{
-    const div = document.createElement('div'); div.className='slot';
-    const item = slots[code];
-    div.innerHTML = `<span class="badge">${code}</span>${item? `${item.variedad} · ${item.cantidad}` : '— vacío —'}`;
-    if(item){ if(item.edadDias>=6) div.classList.add('risk'); else if(item.edadDias>=4) div.classList.add('oldest'); }
-    el.appendChild(div);
-  })
-  const top = [...state.inventario].sort((a,b)=>b.edadDias-a.edadDias).slice(0,8);
-  $('#fefo-list').innerHTML = top.map(x=>`<div class="step">${x.variedad} — ${x.cantidad} tallos · <b>${x.edadDias}d</b> · ${x.localizacion}</div>`).join('');
-}
+        // --- FUNCIONES DE CREACIÓN DE CAJAS ---
+        function createBoxMesh() {
+             const box = new THREE.Mesh(new THREE.BoxGeometry(2.8, 2.8, 2.8), new THREE.MeshStandardMaterial({ color: 0xca8a04 }));
+             box.castShadow = true;
+             const rfidTag = new THREE.Mesh(new THREE.PlaneGeometry(1.2, 1.2), new THREE.MeshBasicMaterial({ color: 0x38bdf8 }));
+             rfidTag.position.set(0, 1.41, 0);
+             rfidTag.rotation.x = -Math.PI/2;
+             box.add(rfidTag);
+             return box;
+        }
 
-// --- Picking ---
-const poVar = $('#po-var'); variedades.forEach(v=>{const o=document.createElement('option');o.textContent=v;poVar.appendChild(o)});
-$('#po-add').addEventListener('click',()=>{
-  const it={cliente:$('#po-cliente').value||'—', variedad:$('#po-var').value, cant:parseInt($('#po-cant').value||100)}; state.pedidos.push(it); renderPO(); toast('Ítem agregado a orden');
-})
-function renderPO(){ $('#po-items').innerHTML = state.pedidos.map((x,i)=>`<div class="step">${i+1}. ${x.variedad} — ${x.cant} tallos <span class="muted">(${x.cliente})</span></div>`).join('') }
-$('#po-opt').addEventListener('click',()=>{
-  const picks=[]; state.pedidos.forEach(p=>{
-    const pool = state.inventario.filter(x=>x.variedad===p.variedad).sort((a,b)=>a.localizacion.localeCompare(b.localizacion));
-    let need=p.cant; for(let c of pool){ if(need<=0) break; const use=Math.min(c.cantidad,need); picks.push({id:c.id,loc:c.localizacion,var:c.variedad,use,edad:c.edadDias}); need-=use; }
-  })
-  picks.sort((a,b)=>a.loc.localeCompare(b.loc));
-  $('#po-route').innerHTML = picks.map((x,i)=>`<div class="step">${i+1}. ${x.loc} → ${x.var} (tomar ${x.use}) <span class="muted">${x.edad}d</span></div>`).join('');
-})
+        function spawnBoxAtFalcom() {
+            const box = createBoxMesh();
+            box.position.set(-15, 4, 0);
+            falcomGroup.add(box);
+            boxesFalcom.push({ mesh: box, progress: 0 });
+        }
 
-// --- Planeación ---
-function renderPlan(){
-  const rows = $('#chk-sync').checked ? getFilteredInventory() : state.inventario;
-  const byVar = groupCount(rows,'variedad'); const labels=Object.keys(byVar); const vals=Object.values(byVar).map(v=>Math.round(v/120));
-  // Alertas min/max
-  const alerts = labels.map((l,i)=>({variedad:l, stock: Object.values(byVar)[i], min:300, max:1500}));
-  $('#plan-alerts').innerHTML = alerts.map(a=>{
-    const tag = a.stock<a.min? '<span class="pill bad">Reponer</span>': a.stock>a.max? '<span class="pill warn">Exceso</span>':'<span class="pill">OK</span>';
-    return `<div class="step">${a.variedad}: ${a.stock} tallos — ${tag}</div>`
-  }).join('');
-}
+        function spawnBoxFromTruckToBelt(index) {
+            const box = createBoxMesh();
+            // Posición inicial: cola del camión en coordenadas locales de mainPlant
+            box.position.set(45, 4, 35); 
+            mainPlantGroup.add(box);
+            
+            boxesPlant.push({ 
+                mesh: box, 
+                progress: 0, 
+                index: index, 
+                state: 'belt', // 'belt', 'qc_check', 'approved', 'rejected'
+                qcTimer: 0,
+                targetShelfPos: new THREE.Vector3(-45 + (index%3)*15, 5 + Math.floor(index/3)*4, 0 + (index%2)*5) // Posición de destino simple
+            });
+            uiPlantCount.textContent = boxesPlant.length;
+        }
 
-// --- Export CSV ---
-$('#btn-export').addEventListener('click',()=>{
-  const src = $('#chk-sync').checked ? getFilteredInventory() : state.inventario;
-  const rows=[["ID","Variedad","Cantidad","Calidad","FechaRecepcion","EdadDias","Proveedor","Cliente","Localizacion"]].concat(src.map(x=>[x.id,x.variedad,x.cantidad,x.calidad,x.fechaRecepcion,x.edadDias,x.proveedor,x.cliente,x.localizacion]));
-  const csv=rows.map(r=>r.join(',')).join('\n'); const blob=new Blob([csv],{type:'text/csv'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='inventario.csv'; a.click(); URL.revokeObjectURL(url);
-})
 
-// --- Simular tiempo real ---
-setInterval(()=>{
-  state.inventario.forEach(x=>{ if(Math.random()<0.05) x.edadDias=Math.min(x.edadDias+1,9) });
-  if(Math.random()<0.6){ // recepción
-    const rec={ id:idCaja(), variedad:choice(variedades), cantidad:rand(80,220), calidad:["Alta","Media","Baja"][rand(0,2)], fechaRecepcion:fmtDate(new Date()), edadDias:0, proveedor:choice(proveedores), cliente:choice(clientes), localizacion:loc() };
-    state.inventario.push(rec); state.recepciones7d[state.recepciones7d.length-1].n++;
-  }
-  if(Math.random()<0.5 && state.inventario.length){ // salida
-    const i=rand(0,state.inventario.length-1); state.inventario[i].cantidad = Math.max(0, state.inventario[i].cantidad - rand(10,40)); if(state.inventario[i].cantidad===0) state.inventario.splice(i,1);
-  }
-  save(); renderAll();
-}, 4000);
+        // --- BUCLE PRINCIPAL DE ANIMACIÓN ---
+        const clock = new THREE.Clock();
 
-function renderAll(){ refreshKPI(); refreshCharts(); renderInventory(); renderRack(); renderPlan(); }
+        function animate() {
+            requestAnimationFrame(animate);
+            const delta = clock.getDelta();
+            timer += delta;
 
-// Población inicial de selects y renderizado
-(function init(){
-  // Popular multiselect de variedades
-  const m=$('#f-var-multi'); variedades.forEach(v=>{ const o=document.createElement('option'); o.value=o.textContent=v; m.appendChild(o); });
-  // Inicializar fechas de recepciones
-  $('#rx-from').value = state.recepciones7d[0].d; $('#rx-to').value = state.recepciones7d.at(-1).d;
-  $('#rx-from').addEventListener('change', refreshCharts); $('#rx-to').addEventListener('change', refreshCharts);
-  renderAll();
-})();
-</script>
+            switch(simState) {
+                case 0: // === FALCOM: Producción y Carga ===
+                    uiPhase.textContent = "1. Origen: Producción y Carga";
+                    if (timer > 0.8 && boxesInTruck < expectedBoxes) {
+                        spawnBoxAtFalcom();
+                        timer = 0;
+                    }
+                    // Animar cinta Falcom
+                    for (let i = boxesFalcom.length - 1; i >= 0; i--) {
+                        let b = boxesFalcom[i];
+                        b.progress += delta * 0.8;
+                        b.mesh.position.x = -15 + (b.progress * 25);
+                        if (b.progress >= 1) {
+                            falcomGroup.remove(b.mesh); b.mesh.geometry.dispose(); b.mesh.material.dispose();
+                            boxesFalcom.splice(i, 1);
+                            boxesInTruck++;
+                        }
+                    }
+                    if (boxesInTruck >= expectedBoxes && boxesFalcom.length === 0) {
+                        simState = 1; timer = 0; truck.rotation.y = Math.PI;
+                    }
+                    break;
+
+                case 1: // === LOGÍSTICA: Viaje ===
+                    uiPhase.textContent = "2. Logística: Transporte a Planta";
+                    let travelProgress = Math.min(timer / 3, 1);
+                    truck.position.lerpVectors(posFalcom, posMain, travelProgress);
+                    if (travelProgress >= 1) {
+                        simState = 2; timer = 0; truck.rotation.y = Math.PI / 2;
+                    }
+                    break;
+
+                case 2: // === RECEPCIÓN: Verificación Tableta ===
+                    uiPhase.textContent = "3. Recepción: Validación RFID";
+                    if (timer < 1) receiverWorker.position.lerp(new THREE.Vector3(45, 2, 38), delta * 2);
+                    
+                    if (timer > 1 && timer < 1.1) {
+                        tabletUI.style.display = 'block'; uiScanned.textContent = "0"; uiMatch.className = "status-loading"; uiMatch.textContent = "Escaneando...";
+                    }
+                    if (timer > 1.5 && timer < 3.5) {
+                        uiScanned.textContent = Math.min(expectedBoxes, Math.floor((timer - 1.5) * 7));
+                    }
+                    if (timer > 3.5) {
+                        uiScanned.textContent = expectedBoxes; uiMatch.textContent = "¡MATCH OK!"; uiMatch.className = "status-ok";
+                    }
+                    if (timer > 5) {
+                        tabletUI.style.display = 'none';
+                        simState = 3; timer = 0; // TRANSICIÓN AL NUEVO ESTADO 3
+                        receiverWorker.position.set(40, 2, 30); // Reset worker
+                    }
+                    break;
+
+                case 3: // === PLANTA: Descarga y Control de Calidad (NUEVO) ===
+                    uiPhase.textContent = "4. Planta: Descarga y Control Calidad";
+                    
+                    // 1. Descargar cajas del camión a la banda rítmicamente
+                    if(timer > 1.5 && processedInPlantCount < expectedBoxes) {
+                        spawnBoxFromTruckToBelt(processedInPlantCount);
+                        processedInPlantCount++;
+                        timer = 0;
+                    }
+
+                    // 2. Lógica de movimiento en Planta
+                    let allFinishedQC = true;
+
+                    boxesPlant.forEach(b => {
+                        if(b.state !== 'finished_storage') allFinishedQC = false;
+
+                        if(b.state === 'belt') {
+                            // Moverse por la banda hacia QC (aprox x=-10)
+                            b.progress += delta * 0.2;
+                            b.mesh.position.x = 45 - (b.progress * 55); // Mover de x=45 a x=-10
+                            
+                            // Llegada al punto de control QC (x aprox -10)
+                            if(b.mesh.position.x <= -10) {
+                                b.state = 'qc_check';
+                                b.mesh.position.x = -10; // Asegurar posición
+                            }
+
+                        } else if (b.state === 'qc_check') {
+                            // Simular escaneo (pausa y cambio de color)
+                            b.qcTimer += delta;
+                            b.mesh.material.color.setHex(0xffff00); // Amarillo escaneo
+
+                            if(b.qcTimer > 0.8) { // Tiempo de escaneo finalizado
+                                if(b.index === rejectionIndex) {
+                                    b.state = 'rejected';
+                                    b.mesh.material.color.setHex(0xff0000); // Rojo rechazo
+                                    rejectedCount++;
+                                    uiRejected.textContent = rejectedCount;
+                                } else {
+                                    b.state = 'approved';
+                                    b.mesh.material.color.setHex(0x4ade80); // Verde aprobado
+                                }
+                            }
+                        } else if (b.state === 'rejected') {
+                            // Mover a zona de rechazo
+                            b.mesh.position.lerp(new THREE.Vector3(-15, 2.5, 50), delta * 2);
+
+                        } else if (b.state === 'approved') {
+                             // Moverse hacia el final de la banda para picking (aprox x=-20)
+                             b.mesh.position.x -= delta * 15;
+                             // Restaurar color original del cartón poco a poco
+                             b.mesh.material.color.lerp(new THREE.Color(0xca8a04), delta*2);
+
+                             if(b.mesh.position.x <= -20) {
+                                 b.state = 'moving_to_shelf'; // Lista para la siguiente fase
+                             }
+                        }
+                    });
+
+                    // Si todas las cajas han pasado el punto de QC, avanzar estado
+                    if(processedInPlantCount === expectedBoxes && boxesPlant.every(b => b.state === 'moving_to_shelf' || b.state === 'rejected')) {
+                         simState = 4;
+                         timer = 0;
+                    }
+                    break;
+
+                case 4: // === PLANTA: Almacenamiento en Picking (NUEVO) ===
+                    uiPhase.textContent = "5. Planta: Almacenamiento en Picking";
+                    
+                    let allStored = true;
+                    boxesPlant.forEach(b => {
+                        if(b.state === 'moving_to_shelf') {
+                            allStored = false;
+                            // "Volar" hacia la estantería
+                            b.mesh.position.lerp(b.targetShelfPos, delta * 3);
+                            if(b.mesh.position.distanceTo(b.targetShelfPos) < 0.5) {
+                                b.state = 'finished_storage';
+                                b.mesh.rotation.y = Math.random() * 0.2; // Un poco de variación natural
+                            }
+                        }
+                    });
+
+                    if(allStored && timer > 3) { // Esperar 3 segs al finalizar
+                        simState = 5; timer = 0;
+                    }
+                    break;
+
+
+                case 5: // === RESET COMPLETO ===
+                    uiPhase.textContent = "Reiniciando simulación...";
+                    if(timer > 2) {
+                        // Limpiar planta
+                        boxesPlant.forEach(b => mainPlantGroup.remove(b.mesh));
+                        boxesPlant = []; rejectedCount = 0; processedInPlantCount = 0;
+                        uiPlantCount.textContent = 0; uiRejected.textContent = 0;
+                        
+                        // Reset variables globales
+                        truck.position.copy(posFalcom); truck.rotation.y = 0;
+                        boxesInTruck = 0;
+                        simState = 0; timer = 0;
+                    }
+                    break;
+            }
+
+            controls.update();
+            renderer.render(scene, camera);
+            labelRenderer.render(scene, camera);
+        }
+
+        animate();
+
+        window.addEventListener("resize", () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            labelRenderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
 </body>
 </html>
