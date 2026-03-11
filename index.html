@@ -2,25 +2,40 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Flower Processing Digital Twin - Full Process</title>
+    <title>Flower Processing Digital Twin - Playback Controls</title>
     <style>
         body { margin: 0; overflow: hidden; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #0b0f19; color: white; user-select: none; }
         canvas { display: block; }
-        .panel { background: rgba(20, 30, 50, 0.9); border: 1px solid #2e4a7a; padding: 12px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); position: absolute; }
+        .panel { background: rgba(15, 23, 42, 0.9); border: 1px solid #334155; padding: 12px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.6); position: absolute; backdrop-filter: blur(4px); }
         
         #currentView { top: 20px; left: 20px; width: 180px; }
-        #mouseControl { bottom: 20px; right: 20px; font-size: 12px; }
+        #mouseControl { top: 20px; right: 20px; font-size: 12px; }
         #mouseControl b { color: #38bdf8; display: block; margin-bottom: 5px; }
         .status-ok { color: #4ade80; font-weight: bold; }
         .status-loading { color: #fbbf24; font-weight: bold; }
-        .status-error { color: #f87171; font-weight: bold; }
+        
+        /* Panel Dual de Hubs RFID */
+        #hubUI { bottom: 20px; left: 20px; width: 220px; border-color: #0ea5e9; }
+        #hubUI h3 { margin: 0 0 10px 0; color: #0ea5e9; font-size: 14px; text-transform: uppercase; text-align: center; border-bottom: 1px solid #1e293b; padding-bottom: 5px; }
+        .hub-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 12px; color: #cbd5e1; }
+        .hub-counter { font-size: 20px; color: #4ade80; font-weight: bold; text-shadow: 0 0 8px rgba(74, 222, 128, 0.4); background: rgba(0,0,0,0.5); padding: 2px 8px; border-radius: 4px; border: 1px solid #1e293b; min-width: 30px; text-align: center;}
 
-        /* Simulación de la Tableta del Operario */
+        /* Tableta del Operario */
         #tabletUI { top: 50%; left: 50%; transform: translate(-50%, -50%); width: 300px; display: none; border: 2px solid #38bdf8; background: #0f172a; z-index: 10; }
         #tabletUI h3 { margin: 0 0 10px 0; color: #38bdf8; text-align: center; border-bottom: 1px solid #1e293b; padding-bottom: 5px; }
         .tablet-row { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 5px; border-bottom: 1px dashed #334155; padding-bottom: 2px;}
 
-        .label { color: white; font-size: 12px; background: rgba(0,0,0,0.6); padding: 2px 6px; border-radius: 4px; border: 1px solid #38bdf8; pointer-events: none; white-space: nowrap; }
+        /* NUEVO: Controles de Reproducción */
+        #playbackUI { bottom: 20px; left: 50%; transform: translateX(-50%); width: 320px; display: flex; flex-direction: column; align-items: center; gap: 10px; border-color: #38bdf8; }
+        .controls-row { display: flex; gap: 8px; justify-content: center; width: 100%; }
+        .btn-play { background: #0ea5e9; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-weight: bold; transition: background 0.2s; }
+        .btn-play:hover { background: #38bdf8; }
+        .btn-speed { background: #1e293b; color: #cbd5e1; border: 1px solid #334155; padding: 6px 10px; border-radius: 4px; cursor: pointer; transition: all 0.2s; }
+        .btn-speed:hover, .btn-speed.active { background: #334155; color: white; border-color: #0ea5e9; }
+        .progress-track { width: 100%; height: 6px; background: #1e293b; border-radius: 3px; overflow: hidden; position: relative; }
+        .progress-fill { height: 100%; background: #4ade80; width: 0%; transition: width 0.3s ease; }
+
+        .label { color: white; font-size: 12px; background: rgba(0,0,0,0.7); padding: 3px 8px; border-radius: 4px; border: 1px solid #38bdf8; pointer-events: none; white-space: nowrap; }
     </style>
     <script type="importmap">
         {
@@ -33,18 +48,38 @@
 </head>
 <body>
     <div id="currentView" class="panel">
-        <div style="text-align: center; color: #cbd5e1; font-size: 11px; margin-bottom:5px; border-bottom: 1px solid #333;">Digital Twin System</div>
+        <div style="text-align: center; color: #e2e8f0; font-size: 12px; margin-bottom:5px; border-bottom: 1px solid #475569; padding-bottom:4px; font-weight:bold;">Digital Twin System</div>
         <div style="font-size: 11px; color: #94a3b8; margin-top:5px;">Fase del Proceso:</div>
-        <div id="phaseStatus" style="font-size: 12px; color: #38bdf8; font-weight: bold;">Iniciando...</div>
-        <div style="font-size: 10px; color: #94a3b8; margin-top:8px;">Cajas en Planta: <span id="plantBoxesCount">0</span>/12</div>
-        <div style="font-size: 10px; color: #f87171;">Rechazadas: <span id="rejectedCount">0</span></div>
+        <div id="phaseStatus" style="font-size: 12px; color: #38bdf8; font-weight: bold; min-height: 18px;">Iniciando...</div>
+        <div style="font-size: 10px; color: #94a3b8; margin-top:8px;">Cajas procesadas: <span id="plantBoxesCount" style="color:#fff;">0</span>/12</div>
+        <div style="font-size: 10px; color: #f87171;">Rechazadas (QC): <span id="rejectedCount">0</span></div>
     </div>
     
+    <div id="hubUI" class="panel">
+        <h3>📡 Control RFID</h3>
+        <div class="hub-row"><span>Hub 1 (Bandas):</span><span class="hub-counter" id="hub1Count">0</span></div>
+        <div class="hub-row"><span>Hub 2 (Almacén):</span><span class="hub-counter" id="hub2Count">0</span></div>
+    </div>
+
     <div id="mouseControl" class="panel">
-        <b>Controles:</b>
+        <b>Controles Cámara:</b>
         <div>🖱️ Click izq + arrastrar · Rotar</div>
         <div>🖱️ Rueda · Zoom</div>
         <div>🖱️ Click der + arrastrar · Mover</div>
+    </div>
+
+    <div id="playbackUI" class="panel">
+        <div class="controls-row">
+            <button class="btn-speed" id="btnReset" title="Retroceder al inicio">⏮️ Reiniciar</button>
+            <button class="btn-play" id="btnPlayPause">⏸️ Pausar</button>
+            <button class="btn-speed active" id="btnSpeed1" data-speed="1">▶️ x1</button>
+            <button class="btn-speed" id="btnSpeed2" data-speed="2">⏩ x2</button>
+            <button class="btn-speed" id="btnSpeed4" data-speed="4">⏭️ x4</button>
+        </div>
+        <div style="font-size: 10px; color: #94a3b8; align-self: flex-start;">Progreso del Lote:</div>
+        <div class="progress-track">
+            <div class="progress-fill" id="batchProgress"></div>
+        </div>
     </div>
 
     <div id="tabletUI" class="panel">
@@ -52,7 +87,7 @@
         <div class="tablet-row"><span>Orden:</span> <span>#PO-8842</span></div>
         <div class="tablet-row"><span>Origen:</span> <span>Fincas Falcom</span></div>
         <div class="tablet-row"><span>Esperadas:</span> <span>12 u</span></div>
-        <div class="tablet-row"><span>Leídas RFID:</span> <span id="scannedBoxes">0</span></div>
+        <div class="tablet-row"><span>Leídas Exterior:</span> <span id="scannedBoxes">0</span></div>
         <div style="text-align: center; margin-top: 10px;" id="matchStatus" class="status-loading">Verificando...</div>
     </div>
 
@@ -67,13 +102,12 @@
         scene.fog = new THREE.FogExp2(0x0a101f, 0.0012);
 
         const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 1000);
-        // Cámara posicionada para ver mejor la planta principal
-        camera.position.set(-100, 150, 180); 
-        camera.lookAt(-50,0,0);
+        camera.position.set(-90, 150, 190); 
+        camera.lookAt(-40,0,0);
 
         const renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.shadowMap.enabled = true; // Activar sombras para más realismo
+        renderer.shadowMap.enabled = true;
         document.body.appendChild(renderer.domElement);
 
         const labelRenderer = new CSS2DRenderer();
@@ -85,7 +119,7 @@
 
         const controls = new OrbitControls(camera, renderer.domElement);
         controls.enableDamping = true;
-        controls.target.set(-40, 0, 0);
+        controls.target.set(-30, 0, 10);
 
         // --- ILUMINACIÓN ---
         scene.add(new THREE.AmbientLight(0xffffff, 0.4));
@@ -100,7 +134,7 @@
 
         // --- ENTORNO ---
         const floorGeo = new THREE.PlaneGeometry(400, 300);
-        const floorMat = new THREE.MeshStandardMaterial({ color: 0x111827, roughness: 0.9, metalness: 0.1 });
+        const floorMat = new THREE.MeshStandardMaterial({ color: 0x111827, roughness: 0.9 });
         const floor = new THREE.Mesh(floorGeo, floorMat);
         floor.rotation.x = -Math.PI / 2;
         floor.receiveShadow = true;
@@ -110,7 +144,6 @@
         grid.position.y = 0.1;
         scene.add(grid);
 
-        // --- UTILIDADES ---
         function createLabel(text, position, parent, offset = new THREE.Vector3(0,0,0)) {
             const div = document.createElement('div');
             div.className = 'label';
@@ -134,334 +167,332 @@
             return group;
         }
 
-        // --- PLANTA PRINCIPAL (Izquierda) ---
+        // --- PLANTA PRINCIPAL ---
         const mainPlantGroup = new THREE.Group();
         mainPlantGroup.position.set(-80, 0, 0);
         scene.add(mainPlantGroup);
 
-        // Base y Estructura
-        const mainBase = new THREE.Mesh(new THREE.BoxGeometry(140, 2, 100), new THREE.MeshStandardMaterial({ color: 0x2c3e50 }));
+        const mainBase = new THREE.Mesh(new THREE.BoxGeometry(140, 2, 100), new THREE.MeshStandardMaterial({ color: 0x1e293b }));
         mainBase.position.y = 1;
         mainBase.receiveShadow = true;
         mainPlantGroup.add(mainBase);
         
-        const mainStructure = new THREE.Mesh(new THREE.BoxGeometry(138, 25, 98), new THREE.MeshStandardMaterial({ color: 0x0ea5e9, transparent: true, opacity: 0.15, wireframe: false, side: THREE.DoubleSide }));
+        const mainStructure = new THREE.Mesh(new THREE.BoxGeometry(138, 25, 98), new THREE.MeshStandardMaterial({ color: 0x0ea5e9, transparent: true, opacity: 0.08, side: THREE.DoubleSide }));
         mainStructure.position.y = 13.5;
         mainPlantGroup.add(mainStructure);
-        createLabel("Planta Principal - Procesamiento", new THREE.Vector3(0, 28, 0), mainPlantGroup);
 
-        // NUEVO: Bandas Transportadoras (Recepción a Calidad)
+        const wallX = -25;
+        const divWallMat = new THREE.MeshStandardMaterial({ color: 0x0ea5e9, transparent: true, opacity: 0.35, side: THREE.DoubleSide });
+        const wallR = new THREE.Mesh(new THREE.BoxGeometry(2, 25, 73), divWallMat); wallR.position.set(wallX, 13.5, -13.5); mainPlantGroup.add(wallR);
+        const wallL = new THREE.Mesh(new THREE.BoxGeometry(2, 25, 3), divWallMat); wallL.position.set(wallX, 13.5, 48.5); mainPlantGroup.add(wallL);
+        const wallT = new THREE.Mesh(new THREE.BoxGeometry(2, 15, 24), divWallMat); wallT.position.set(wallX, 18.5, 35); mainPlantGroup.add(wallT);
+
         const beltMat = new THREE.MeshStandardMaterial({ color: 0x475569, roughness: 0.8 });
         for(let i=-1; i<=1; i++) {
              const belt = new THREE.Mesh(new THREE.BoxGeometry(60, 1, 4), beltMat);
-             belt.position.set(10, 2.5, i * 8 + 35); // Posicionadas en la zona de recepción
-             belt.receiveShadow = true;
-             mainPlantGroup.add(belt);
+             belt.position.set(10, 2.5, i * 8 + 35); belt.receiveShadow = true; mainPlantGroup.add(belt);
         }
-        createLabel("Descarga & Bandas", new THREE.Vector3(30, 10, 35), mainPlantGroup);
 
-        // NUEVO: Área de Calidad (QC)
-        const qcStationMat = new THREE.MeshStandardMaterial({color: 0xf59e0b, metalness: 0.7, roughness: 0.2});
-        const qcArch = new THREE.Mesh(new THREE.TorusGeometry(5, 0.5, 16, 32, Math.PI), qcStationMat);
-        qcArch.position.set(-10, 3, 35); // Sobre la banda central
-        qcArch.rotation.y = Math.PI/2;
-        mainPlantGroup.add(qcArch);
+        const hubMat = new THREE.MeshStandardMaterial({ color: 0x0f172a, metalness: 0.5 });
+        const hub1Device = new THREE.Mesh(new THREE.BoxGeometry(4, 8, 4), hubMat); hub1Device.position.set(30, 4, 18); mainPlantGroup.add(hub1Device);
+        const hub1Screen = new THREE.Mesh(new THREE.PlaneGeometry(2.5, 3), new THREE.MeshBasicMaterial({ color: 0x0ea5e9 })); hub1Screen.position.set(30, 5, 20.1); mainPlantGroup.add(hub1Screen);
+        
+        const antennasArray = [];
+        for(let i=-1; i<=1; i++) {
+            const zPos = i * 8 + 35;
+            const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.2, 7), new THREE.MeshStandardMaterial({ color: 0x94a3b8 })); pole.position.set(30, 3.5, zPos - 2.5); mainPlantGroup.add(pole);
+            const ring = new THREE.Mesh(new THREE.TorusGeometry(2.5, 0.15, 16, 32), new THREE.MeshBasicMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.4 })); ring.rotation.y = Math.PI / 2; ring.position.set(30, 4, zPos); mainPlantGroup.add(ring);
+            antennasArray.push({ mesh: ring, timer: 0, active: false });
+        }
 
-        const qcInspector = createHumanoid(0xffff00); // Amarillo intenso para QC
-        qcInspector.position.set(-10, 2, 42);
-        qcInspector.rotation.y = Math.PI;
-        mainPlantGroup.add(qcInspector);
-        createLabel("Estación de Calidad (QC)", new THREE.Vector3(-10, 12, 35), mainPlantGroup);
-        const rejectArea = new THREE.Mesh(new THREE.CircleGeometry(5), new THREE.MeshBasicMaterial({color: 0xff0000, transparent: true, opacity: 0.3}));
-        rejectArea.rotation.x = -Math.PI/2;
-        rejectArea.position.set(-15, 2.1, 50);
-        mainPlantGroup.add(rejectArea);
-        createLabel("Zona Rechazo", new THREE.Vector3(-15, 5, 50), mainPlantGroup);
+        const hub2FrameMat = new THREE.MeshBasicMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.25 });
+        const h2Pillar1 = new THREE.Mesh(new THREE.BoxGeometry(3, 11, 0.5), hub2FrameMat); h2Pillar1.position.set(wallX, 6.5, 23);
+        const h2Pillar2 = new THREE.Mesh(new THREE.BoxGeometry(3, 11, 0.5), hub2FrameMat); h2Pillar2.position.set(wallX, 6.5, 47);
+        const h2Beam = new THREE.Mesh(new THREE.BoxGeometry(3, 0.5, 24.5), hub2FrameMat); h2Beam.position.set(wallX, 11.75, 35);
+        mainPlantGroup.add(h2Pillar1, h2Pillar2, h2Beam);
+        const hub2Device = new THREE.Mesh(new THREE.BoxGeometry(1.5, 4, 2.5), hubMat); hub2Device.position.set(wallX + 1, 8, 21.5); mainPlantGroup.add(hub2Device);
 
+        const qcTunnel = new THREE.Mesh(new THREE.BoxGeometry(8, 7, 24), new THREE.MeshStandardMaterial({color: 0xf59e0b, transparent: true, opacity: 0.2})); qcTunnel.position.set(-10, 4.5, 35); mainPlantGroup.add(qcTunnel);
+        const qcInspector = createHumanoid(0xffff00); qcInspector.position.set(-10, 2, 50); qcInspector.rotation.y = Math.PI; mainPlantGroup.add(qcInspector);
+        const rejectArea = new THREE.Mesh(new THREE.CircleGeometry(5), new THREE.MeshBasicMaterial({color: 0xff0000, transparent: true, opacity: 0.3})); rejectArea.rotation.x = -Math.PI/2; rejectArea.position.set(-15, 2.1, 55); mainPlantGroup.add(rejectArea);
 
-        // NUEVO: Área de Picking (Estanterías)
         const shelfMat = new THREE.MeshStandardMaterial({ color: 0x64748b });
         const shelfGeo = new THREE.BoxGeometry(5, 20, 40);
         for(let i=0; i<3; i++) {
-            const shelf = new THREE.Mesh(shelfGeo, shelfMat);
-            shelf.position.set(-50 + (i*15), 11, 0);
-            shelf.castShadow = true;
-            mainPlantGroup.add(shelf);
+            const shelf = new THREE.Mesh(shelfGeo, shelfMat); shelf.position.set(-50 + (i*15), 11, 0); shelf.castShadow = true; mainPlantGroup.add(shelf);
         }
-        createLabel("Área de Picking / Almacén", new THREE.Vector3(-50, 25, 0), mainPlantGroup);
 
-        // Operario de Recepción (inicial)
-        const receiverWorker = createHumanoid(0x38bdf8);
-        receiverWorker.position.set(40, 2, 30);
-        mainPlantGroup.add(receiverWorker);
+        const receiverWorker = createHumanoid(0x38bdf8); receiverWorker.position.set(40, 2, 30); mainPlantGroup.add(receiverWorker);
 
-
-        // --- FINCAS FALCOM (Derecha - Origen) ---
+        // --- FINCAS FALCOM ---
         const falcomGroup = new THREE.Group();
         falcomGroup.position.set(100, 0, -30);
         scene.add(falcomGroup);
 
-        const falcomBase = new THREE.Mesh(new THREE.BoxGeometry(60, 2, 40), new THREE.MeshStandardMaterial({ color: 0x573c2c }));
-        falcomBase.position.y = 1;
-        falcomGroup.add(falcomBase);
-        createLabel("Fincas Falcom (Origen)", new THREE.Vector3(0, 15, 0), falcomGroup);
-
-        const printer = new THREE.Mesh(new THREE.BoxGeometry(5, 4, 5), new THREE.MeshStandardMaterial({ color: 0x333333 }));
-        printer.position.set(-15, 3, 0);
-        falcomGroup.add(printer);
-        const conveyorFalcom = new THREE.Mesh(new THREE.BoxGeometry(25, 0.5, 4), new THREE.MeshStandardMaterial({ color: 0x555555 }));
-        conveyorFalcom.position.set(0, 2.5, 0);
-        falcomGroup.add(conveyorFalcom);
-
-        const falcomWorker1 = createHumanoid(0xf97316); // Naranja
-        falcomWorker1.position.set(-15, 2, 5);
-        falcomGroup.add(falcomWorker1);
+        const falcomBase = new THREE.Mesh(new THREE.BoxGeometry(60, 2, 40), new THREE.MeshStandardMaterial({ color: 0x573c2c })); falcomBase.position.y = 1; falcomGroup.add(falcomBase);
+        const printer = new THREE.Mesh(new THREE.BoxGeometry(5, 4, 5), new THREE.MeshStandardMaterial({ color: 0x333333 })); printer.position.set(-15, 3, 0); falcomGroup.add(printer);
+        const conveyorFalcom = new THREE.Mesh(new THREE.BoxGeometry(25, 0.5, 4), new THREE.MeshStandardMaterial({ color: 0x555555 })); conveyorFalcom.position.set(0, 2.5, 0); falcomGroup.add(conveyorFalcom);
+        const falcomWorker1 = createHumanoid(0xf97316); falcomWorker1.position.set(-15, 2, 5); falcomGroup.add(falcomWorker1);
 
         // --- CAMIÓN ---
         const truck = new THREE.Group();
-        const cab = new THREE.Mesh(new THREE.BoxGeometry(7, 7, 8), new THREE.MeshStandardMaterial({ color: 0xffffff }));
-        cab.position.set(-7, 4.5, 0);
-        cab.castShadow = true;
-        const trailer = new THREE.Mesh(new THREE.BoxGeometry(16, 9, 9), new THREE.MeshStandardMaterial({ color: 0xd1d5db }));
-        trailer.position.set(5, 5.5, 0);
-        trailer.castShadow = true;
-        truck.add(cab, trailer);
-        scene.add(truck);
-        
-        const posFalcom = new THREE.Vector3(110, 0, 0);
-        const posMain = new THREE.Vector3(-35, 0, 35); // Punto de llegada a bandas
-        truck.position.copy(posFalcom);
+        const cab = new THREE.Mesh(new THREE.BoxGeometry(7, 7, 8), new THREE.MeshStandardMaterial({ color: 0xffffff })); cab.position.set(-7, 4.5, 0); cab.castShadow = true;
+        const trailer = new THREE.Mesh(new THREE.BoxGeometry(16, 9, 9), new THREE.MeshStandardMaterial({ color: 0xd1d5db })); trailer.position.set(5, 5.5, 0); trailer.castShadow = true;
+        truck.add(cab, trailer); scene.add(truck);
+        const posFalcom = new THREE.Vector3(110, 0, 0); const posMain = new THREE.Vector3(-35, 0, 35); truck.position.copy(posFalcom);
 
 
-        // --- VARIABLES DE SIMULACIÓN ---
+        // --- LÓGICA DE SIMULACIÓN Y REPRODUCCIÓN ---
         let simState = 0;
-        // Estados:
-        // 0: Producción Falcom
-        // 1: Viaje Camión
-        // 2: Recepción (Tableta)
-        // 3: Descarga a Bandas y Control de Calidad
-        // 4: Almacenamiento en Picking
-        // 5: Reset
-
         let timer = 0;
         let boxesInTruck = 0;
-        const expectedBoxes = 12; // Total de cajas para la demo
-        const rejectionIndex = 3; // La 4ta caja (índice 3) será rechazada
+        const expectedBoxes = 12;
+        const rejectionIndex = 3; 
         
         let boxesFalcom = [];
-        let boxesPlant = []; // Cajas en proceso en la planta principal
+        let boxesPlant = []; 
         let rejectedCount = 0;
         let processedInPlantCount = 0;
+        let completedBoxes = 0; // Para la barra de progreso
+        
+        let hub1ScannedCount = 0;
+        let hub2ScannedCount = 0; 
+        let hub2Active = false; 
+        let hub2Timer = 0; 
 
-        // UI Elements
+        // Variables de Reproducción
+        let isPaused = false;
+        let timeMultiplier = 1;
+
         const uiPhase = document.getElementById('phaseStatus');
         const tabletUI = document.getElementById('tabletUI');
         const uiScanned = document.getElementById('scannedBoxes');
         const uiMatch = document.getElementById('matchStatus');
         const uiPlantCount = document.getElementById('plantBoxesCount');
         const uiRejected = document.getElementById('rejectedCount');
+        const uiHub1Count = document.getElementById('hub1Count');
+        const uiHub2Count = document.getElementById('hub2Count');
+        const uiProgressBar = document.getElementById('batchProgress');
+
+        // --- EVENTOS DE REPRODUCCIÓN (UI) ---
+        const btnPlay = document.getElementById('btnPlayPause');
+        const btnReset = document.getElementById('btnReset');
+        const speedBtns = [document.getElementById('btnSpeed1'), document.getElementById('btnSpeed2'), document.getElementById('btnSpeed4')];
+
+        btnPlay.addEventListener('click', () => {
+            isPaused = !isPaused;
+            btnPlay.textContent = isPaused ? "▶️ Reanudar" : "⏸️ Pausar";
+            btnPlay.style.background = isPaused ? "#f59e0b" : "#0ea5e9";
+        });
+
+        speedBtns.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                speedBtns.forEach(b => b.classList.remove('active'));
+                e.target.classList.add('active');
+                timeMultiplier = parseFloat(e.target.getAttribute('data-speed'));
+            });
+        });
+
+        btnReset.addEventListener('click', resetSimulation);
+
+        function resetSimulation() {
+            // Eliminar mallas de la escena
+            boxesFalcom.forEach(b => falcomGroup.remove(b.mesh));
+            boxesPlant.forEach(b => mainPlantGroup.remove(b.mesh));
+            
+            // Reiniciar arrays y contadores
+            boxesFalcom = []; boxesPlant = []; 
+            rejectedCount = 0; processedInPlantCount = 0; boxesInTruck = 0; completedBoxes = 0;
+            hub1ScannedCount = 0; hub2ScannedCount = 0; 
+            hub2Active = false; hub2Timer = 0; timer = 0; simState = 0;
+
+            // Reiniciar UI
+            uiPlantCount.textContent = "0"; uiRejected.textContent = "0";
+            uiHub1Count.textContent = "0"; uiHub2Count.textContent = "0";
+            uiProgressBar.style.width = "0%";
+            tabletUI.style.display = 'none';
+
+            // Reiniciar posiciones
+            truck.position.copy(posFalcom); truck.rotation.y = 0;
+            receiverWorker.position.set(40, 2, 30);
+            hub1Screen.material.color.setHex(0x0ea5e9);
+            hub2FrameMat.color.setHex(0x38bdf8); hub2FrameMat.opacity = 0.25;
+
+            // Despausar si estaba pausado
+            isPaused = false;
+            btnPlay.textContent = "⏸️ Pausar";
+            btnPlay.style.background = "#0ea5e9";
+        }
 
 
-        // --- FUNCIONES DE CREACIÓN DE CAJAS ---
         function createBoxMesh() {
              const box = new THREE.Mesh(new THREE.BoxGeometry(2.8, 2.8, 2.8), new THREE.MeshStandardMaterial({ color: 0xca8a04 }));
              box.castShadow = true;
-             const rfidTag = new THREE.Mesh(new THREE.PlaneGeometry(1.2, 1.2), new THREE.MeshBasicMaterial({ color: 0x38bdf8 }));
-             rfidTag.position.set(0, 1.41, 0);
-             rfidTag.rotation.x = -Math.PI/2;
-             box.add(rfidTag);
+             const rfidTag = new THREE.Mesh(new THREE.PlaneGeometry(1.2, 1.2), new THREE.MeshBasicMaterial({ color: 0xffffff }));
+             rfidTag.position.set(0, 1.41, 0); rfidTag.rotation.x = -Math.PI/2; box.add(rfidTag);
              return box;
         }
 
         function spawnBoxAtFalcom() {
-            const box = createBoxMesh();
-            box.position.set(-15, 4, 0);
-            falcomGroup.add(box);
-            boxesFalcom.push({ mesh: box, progress: 0 });
+            const box = createBoxMesh(); box.position.set(-15, 4, 0);
+            falcomGroup.add(box); boxesFalcom.push({ mesh: box, progress: 0 });
         }
 
         function spawnBoxFromTruckToBelt(index) {
-            const box = createBoxMesh();
-            // Posición inicial: cola del camión en coordenadas locales de mainPlant
-            box.position.set(45, 4, 35); 
-            mainPlantGroup.add(box);
-            
+            const beltIndex = index % 3; const zPos = (beltIndex - 1) * 8 + 35; 
+            const box = createBoxMesh(); box.position.set(45, 4, zPos); mainPlantGroup.add(box);
             boxesPlant.push({ 
-                mesh: box, 
-                progress: 0, 
-                index: index, 
-                state: 'belt', // 'belt', 'qc_check', 'approved', 'rejected'
-                qcTimer: 0,
-                targetShelfPos: new THREE.Vector3(-45 + (index%3)*15, 5 + Math.floor(index/3)*4, 0 + (index%2)*5) // Posición de destino simple
+                mesh: box, progress: 0, index: index, beltZ: zPos, state: 'belt', qcTimer: 0,
+                hub1Scanned: false, hub2Scanned: false,
+                targetShelfPos: new THREE.Vector3(-45 + (index%3)*15, 5 + Math.floor(index/3)*4, 0 + (index%2)*5)
             });
             uiPlantCount.textContent = boxesPlant.length;
         }
 
-
-        // --- BUCLE PRINCIPAL DE ANIMACIÓN ---
         const clock = new THREE.Clock();
 
         function animate() {
             requestAnimationFrame(animate);
-            const delta = clock.getDelta();
-            timer += delta;
+            
+            // Calculamos el tiempo base del frame
+            const dt = clock.getDelta();
+            
+            // Solo actualizamos la simulación si NO está pausada
+            if (!isPaused) {
+                const delta = dt * timeMultiplier; // Aplicamos aceleración
+                timer += delta;
 
-            switch(simState) {
-                case 0: // === FALCOM: Producción y Carga ===
-                    uiPhase.textContent = "1. Origen: Producción y Carga";
-                    if (timer > 0.8 && boxesInTruck < expectedBoxes) {
-                        spawnBoxAtFalcom();
-                        timer = 0;
-                    }
-                    // Animar cinta Falcom
-                    for (let i = boxesFalcom.length - 1; i >= 0; i--) {
-                        let b = boxesFalcom[i];
-                        b.progress += delta * 0.8;
-                        b.mesh.position.x = -15 + (b.progress * 25);
-                        if (b.progress >= 1) {
-                            falcomGroup.remove(b.mesh); b.mesh.geometry.dispose(); b.mesh.material.dispose();
-                            boxesFalcom.splice(i, 1);
-                            boxesInTruck++;
-                        }
-                    }
-                    if (boxesInTruck >= expectedBoxes && boxesFalcom.length === 0) {
-                        simState = 1; timer = 0; truck.rotation.y = Math.PI;
-                    }
-                    break;
-
-                case 1: // === LOGÍSTICA: Viaje ===
-                    uiPhase.textContent = "2. Logística: Transporte a Planta";
-                    let travelProgress = Math.min(timer / 3, 1);
-                    truck.position.lerpVectors(posFalcom, posMain, travelProgress);
-                    if (travelProgress >= 1) {
-                        simState = 2; timer = 0; truck.rotation.y = Math.PI / 2;
-                    }
-                    break;
-
-                case 2: // === RECEPCIÓN: Verificación Tableta ===
-                    uiPhase.textContent = "3. Recepción: Validación RFID";
-                    if (timer < 1) receiverWorker.position.lerp(new THREE.Vector3(45, 2, 38), delta * 2);
-                    
-                    if (timer > 1 && timer < 1.1) {
-                        tabletUI.style.display = 'block'; uiScanned.textContent = "0"; uiMatch.className = "status-loading"; uiMatch.textContent = "Escaneando...";
-                    }
-                    if (timer > 1.5 && timer < 3.5) {
-                        uiScanned.textContent = Math.min(expectedBoxes, Math.floor((timer - 1.5) * 7));
-                    }
-                    if (timer > 3.5) {
-                        uiScanned.textContent = expectedBoxes; uiMatch.textContent = "¡MATCH OK!"; uiMatch.className = "status-ok";
-                    }
-                    if (timer > 5) {
-                        tabletUI.style.display = 'none';
-                        simState = 3; timer = 0; // TRANSICIÓN AL NUEVO ESTADO 3
-                        receiverWorker.position.set(40, 2, 30); // Reset worker
-                    }
-                    break;
-
-                case 3: // === PLANTA: Descarga y Control de Calidad (NUEVO) ===
-                    uiPhase.textContent = "4. Planta: Descarga y Control Calidad";
-                    
-                    // 1. Descargar cajas del camión a la banda rítmicamente
-                    if(timer > 1.5 && processedInPlantCount < expectedBoxes) {
-                        spawnBoxFromTruckToBelt(processedInPlantCount);
-                        processedInPlantCount++;
-                        timer = 0;
-                    }
-
-                    // 2. Lógica de movimiento en Planta
-                    let allFinishedQC = true;
-
-                    boxesPlant.forEach(b => {
-                        if(b.state !== 'finished_storage') allFinishedQC = false;
-
-                        if(b.state === 'belt') {
-                            // Moverse por la banda hacia QC (aprox x=-10)
-                            b.progress += delta * 0.2;
-                            b.mesh.position.x = 45 - (b.progress * 55); // Mover de x=45 a x=-10
-                            
-                            // Llegada al punto de control QC (x aprox -10)
-                            if(b.mesh.position.x <= -10) {
-                                b.state = 'qc_check';
-                                b.mesh.position.x = -10; // Asegurar posición
+                switch(simState) {
+                    case 0: // Producción
+                        uiPhase.textContent = "1. Origen: Producción y Carga";
+                        if (timer > 0.6 && boxesInTruck < expectedBoxes) { spawnBoxAtFalcom(); timer = 0; }
+                        for (let i = boxesFalcom.length - 1; i >= 0; i--) {
+                            let b = boxesFalcom[i]; b.progress += delta * 1.2; b.mesh.position.x = -15 + (b.progress * 25);
+                            if (b.progress >= 1) {
+                                falcomGroup.remove(b.mesh); b.mesh.geometry.dispose(); b.mesh.material.dispose();
+                                boxesFalcom.splice(i, 1); boxesInTruck++;
+                                // Actualizar progreso visual (1ra fase)
+                                completedBoxes += 0.25; 
                             }
+                        }
+                        if (boxesInTruck >= expectedBoxes && boxesFalcom.length === 0) { simState = 1; timer = 0; truck.rotation.y = Math.PI; }
+                        break;
 
-                        } else if (b.state === 'qc_check') {
-                            // Simular escaneo (pausa y cambio de color)
-                            b.qcTimer += delta;
-                            b.mesh.material.color.setHex(0xffff00); // Amarillo escaneo
+                    case 1: // Viaje
+                        uiPhase.textContent = "2. Logística: Transporte a Planta";
+                        let travelProgress = Math.min(timer / 3, 1);
+                        truck.position.lerpVectors(posFalcom, posMain, travelProgress);
+                        if (travelProgress >= 1) { simState = 2; timer = 0; truck.rotation.y = Math.PI / 2; }
+                        break;
 
-                            if(b.qcTimer > 0.8) { // Tiempo de escaneo finalizado
-                                if(b.index === rejectionIndex) {
-                                    b.state = 'rejected';
-                                    b.mesh.material.color.setHex(0xff0000); // Rojo rechazo
-                                    rejectedCount++;
-                                    uiRejected.textContent = rejectedCount;
-                                } else {
-                                    b.state = 'approved';
-                                    b.mesh.material.color.setHex(0x4ade80); // Verde aprobado
+                    case 2: // Recepción
+                        uiPhase.textContent = "3. Recepción: Validación Exterior";
+                        if (timer < 1) receiverWorker.position.lerp(new THREE.Vector3(45, 2, 38), delta * 2);
+                        if (timer > 1 && timer < 1.1) { tabletUI.style.display = 'block'; uiScanned.textContent = "0"; uiMatch.className = "status-loading"; uiMatch.textContent = "Escaneando RFID..."; }
+                        if (timer > 1.5 && timer < 3.5) { uiScanned.textContent = Math.min(expectedBoxes, Math.floor((timer - 1.5) * 7)); }
+                        if (timer > 3.5) { uiScanned.textContent = expectedBoxes; uiMatch.textContent = "MATCH COMPLETO"; uiMatch.className = "status-ok"; }
+                        if (timer > 5) { tabletUI.style.display = 'none'; simState = 3; timer = 0; receiverWorker.position.set(40, 2, 30); }
+                        break;
+
+                    case 3: // Planta: Descarga, Hubs y QC
+                        uiPhase.textContent = "4. Planta: Antenas y Calidad";
+                        if(timer > 1.0 && processedInPlantCount < expectedBoxes) { spawnBoxFromTruckToBelt(processedInPlantCount); processedInPlantCount++; timer = 0; }
+
+                        boxesPlant.forEach(b => {
+                            if(b.state === 'belt') {
+                                b.progress += delta * 0.25;
+                                b.mesh.position.x = 45 - (b.progress * 55); 
+                                
+                                // HUB 1 Logic
+                                if (!b.hub1Scanned && b.mesh.position.x <= 30) {
+                                    b.hub1Scanned = true; hub1ScannedCount++; uiHub1Count.textContent = hub1ScannedCount;
+                                    let ringIndex = Math.round((b.beltZ - 35) / 8) + 1; 
+                                    if(antennasArray[ringIndex]) { antennasArray[ringIndex].active = true; antennasArray[ringIndex].timer = 0; }
+                                    completedBoxes += 0.25; // Progreso 2da fase
+                                }
+
+                                if(b.mesh.position.x <= -10) { b.state = 'qc_check'; b.mesh.position.x = -10; }
+
+                            } else if (b.state === 'qc_check') {
+                                b.qcTimer += delta; b.mesh.material.color.setHex(0xffff00); 
+
+                                if(b.qcTimer > 0.8) { 
+                                    if(b.index === rejectionIndex) {
+                                        b.state = 'rejected'; b.mesh.material.color.setHex(0xff0000); 
+                                        rejectedCount++; uiRejected.textContent = rejectedCount;
+                                        completedBoxes += 0.5; // Finalizó su ciclo al ser rechazada
+                                    } else { b.state = 'approved'; b.mesh.material.color.setHex(0x4ade80); }
+                                }
+                            } else if (b.state === 'rejected') {
+                                b.mesh.position.lerp(new THREE.Vector3(-15, 2.5, 55), delta * 2);
+                            } else if (b.state === 'approved') {
+                                 b.mesh.position.x -= delta * 15;
+                                 b.mesh.material.color.lerp(new THREE.Color(0xca8a04), delta*2);
+                                 
+                                 // HUB 2 Logic
+                                 if (!b.hub2Scanned && b.mesh.position.x <= wallX) {
+                                     b.hub2Scanned = true; hub2ScannedCount++; uiHub2Count.textContent = hub2ScannedCount;
+                                     hub2Active = true; hub2Timer = 0;
+                                     completedBoxes += 0.25; // Progreso 3ra fase
+                                 }
+
+                                 if(b.mesh.position.x <= wallX - 10) b.state = 'moving_to_shelf'; 
+                            }
+                        });
+
+                        antennasArray.forEach(ant => {
+                            if (ant.active) {
+                                ant.timer += delta;
+                                ant.mesh.scale.setScalar(1 + (ant.timer * 0.8));
+                                ant.mesh.material.opacity = Math.max(0, 0.8 - (ant.timer * 2));
+                                ant.mesh.material.color.setHex(0x4ade80); 
+                                if (ant.timer > 0.4) { ant.active = false; ant.mesh.scale.setScalar(1); ant.mesh.material.opacity = 0.4; ant.mesh.material.color.setHex(0x38bdf8); }
+                            }
+                        });
+
+                        if (hub2Active) {
+                            hub2Timer += delta;
+                            hub2FrameMat.color.setHex(0x4ade80); 
+                            hub2FrameMat.opacity = Math.max(0.1, 0.8 - (hub2Timer * 1.5));
+                            if (hub2Timer > 0.5) { hub2Active = false; hub2FrameMat.color.setHex(0x38bdf8); hub2FrameMat.opacity = 0.25; }
+                        }
+
+                        if(processedInPlantCount === expectedBoxes && boxesPlant.every(b => b.state === 'moving_to_shelf' || b.state === 'rejected')) {
+                             simState = 4; timer = 0;
+                        }
+                        break;
+
+                    case 4: // Almacenamiento
+                        uiPhase.textContent = "5. Planta: Almacenamiento en Picking";
+                        let allStored = true;
+                        boxesPlant.forEach(b => {
+                            if(b.state === 'moving_to_shelf') {
+                                allStored = false;
+                                b.mesh.position.lerp(b.targetShelfPos, delta * 3);
+                                if(b.mesh.position.distanceTo(b.targetShelfPos) < 0.5) {
+                                    b.state = 'finished_storage'; b.mesh.rotation.y = Math.random() * 0.2; 
+                                    completedBoxes += 0.25; // Progreso final
                                 }
                             }
-                        } else if (b.state === 'rejected') {
-                            // Mover a zona de rechazo
-                            b.mesh.position.lerp(new THREE.Vector3(-15, 2.5, 50), delta * 2);
+                        });
+                        if(allStored && timer > 3) { simState = 5; timer = 0; }
+                        break;
 
-                        } else if (b.state === 'approved') {
-                             // Moverse hacia el final de la banda para picking (aprox x=-20)
-                             b.mesh.position.x -= delta * 15;
-                             // Restaurar color original del cartón poco a poco
-                             b.mesh.material.color.lerp(new THREE.Color(0xca8a04), delta*2);
+                    case 5: // Reset Automático
+                        uiPhase.textContent = "Lote Finalizado. Reiniciando...";
+                        if(timer > 3) { resetSimulation(); }
+                        break;
+                }
 
-                             if(b.mesh.position.x <= -20) {
-                                 b.state = 'moving_to_shelf'; // Lista para la siguiente fase
-                             }
-                        }
-                    });
-
-                    // Si todas las cajas han pasado el punto de QC, avanzar estado
-                    if(processedInPlantCount === expectedBoxes && boxesPlant.every(b => b.state === 'moving_to_shelf' || b.state === 'rejected')) {
-                         simState = 4;
-                         timer = 0;
-                    }
-                    break;
-
-                case 4: // === PLANTA: Almacenamiento en Picking (NUEVO) ===
-                    uiPhase.textContent = "5. Planta: Almacenamiento en Picking";
-                    
-                    let allStored = true;
-                    boxesPlant.forEach(b => {
-                        if(b.state === 'moving_to_shelf') {
-                            allStored = false;
-                            // "Volar" hacia la estantería
-                            b.mesh.position.lerp(b.targetShelfPos, delta * 3);
-                            if(b.mesh.position.distanceTo(b.targetShelfPos) < 0.5) {
-                                b.state = 'finished_storage';
-                                b.mesh.rotation.y = Math.random() * 0.2; // Un poco de variación natural
-                            }
-                        }
-                    });
-
-                    if(allStored && timer > 3) { // Esperar 3 segs al finalizar
-                        simState = 5; timer = 0;
-                    }
-                    break;
-
-
-                case 5: // === RESET COMPLETO ===
-                    uiPhase.textContent = "Reiniciando simulación...";
-                    if(timer > 2) {
-                        // Limpiar planta
-                        boxesPlant.forEach(b => mainPlantGroup.remove(b.mesh));
-                        boxesPlant = []; rejectedCount = 0; processedInPlantCount = 0;
-                        uiPlantCount.textContent = 0; uiRejected.textContent = 0;
-                        
-                        // Reset variables globales
-                        truck.position.copy(posFalcom); truck.rotation.y = 0;
-                        boxesInTruck = 0;
-                        simState = 0; timer = 0;
-                    }
-                    break;
+                // Actualizar UI
+                hub1Screen.material.color.setHex(hub1ScannedCount > 0 && hub1ScannedCount < expectedBoxes ? 0x4ade80 : 0x0ea5e9);
+                
+                // Calcular porcentaje de la barra (12 cajas x 1 punto de progreso = 12 puntos totales)
+                let pct = Math.min((completedBoxes / expectedBoxes) * 100, 100);
+                uiProgressBar.style.width = `${pct}%`;
             }
 
+            // Los controles y el render SIEMPRE se ejecutan para poder mover la cámara en pausa
             controls.update();
             renderer.render(scene, camera);
             labelRenderer.render(scene, camera);
