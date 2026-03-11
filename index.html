@@ -2,28 +2,28 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Flower Processing Digital Twin - Dock Doors Fixed</title>
+    <title>Flower Processing Digital Twin - Full Dual Logistics</title>
     <style>
         body { margin: 0; overflow: hidden; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #0b0f19; color: white; user-select: none; }
         canvas { display: block; }
         .panel { background: rgba(15, 23, 42, 0.9); border: 1px solid #334155; padding: 12px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.6); position: absolute; backdrop-filter: blur(4px); }
         
-        #currentView { top: 20px; left: 20px; width: 190px; }
-        #mouseControl { top: 20px; right: 20px; font-size: 12px; }
-        #mouseControl b { color: #38bdf8; display: block; margin-bottom: 5px; }
-        .status-ok { color: #4ade80; font-weight: bold; }
-        .status-loading { color: #fbbf24; font-weight: bold; }
+        #currentView { top: 20px; left: 20px; width: 230px; }
+        .status-row { display: flex; justify-content: space-between; font-size: 11px; color: #94a3b8; margin-top: 4px; }
         
-        #hubUI { bottom: 20px; left: 20px; width: 220px; border-color: #0ea5e9; }
+        #hubUI { bottom: 20px; left: 20px; width: 250px; border-color: #0ea5e9; }
         #hubUI h3 { margin: 0 0 10px 0; color: #0ea5e9; font-size: 14px; text-transform: uppercase; text-align: center; border-bottom: 1px solid #1e293b; padding-bottom: 5px; }
         .hub-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 12px; color: #cbd5e1; }
-        .hub-counter { font-size: 20px; color: #4ade80; font-weight: bold; text-shadow: 0 0 8px rgba(74, 222, 128, 0.4); background: rgba(0,0,0,0.5); padding: 2px 8px; border-radius: 4px; border: 1px solid #1e293b; min-width: 30px; text-align: center;}
+        .hub-counter { font-size: 20px; color: #4ade80; font-weight: bold; background: rgba(0,0,0,0.5); padding: 2px 8px; border-radius: 4px; border: 1px solid #1e293b; min-width: 30px; text-align: center;}
 
+        /* Tableta de Recepción Restaurada */
         #tabletUI { top: 50%; left: 50%; transform: translate(-50%, -50%); width: 300px; display: none; border: 2px solid #38bdf8; background: #0f172a; z-index: 10; }
         #tabletUI h3 { margin: 0 0 10px 0; color: #38bdf8; text-align: center; border-bottom: 1px solid #1e293b; padding-bottom: 5px; }
         .tablet-row { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 5px; border-bottom: 1px dashed #334155; padding-bottom: 2px;}
+        .status-ok { color: #4ade80; font-weight: bold; }
+        .status-loading { color: #fbbf24; font-weight: bold; }
 
-        #playbackUI { bottom: 20px; left: 50%; transform: translateX(-50%); width: 320px; display: flex; flex-direction: column; align-items: center; gap: 10px; border-color: #38bdf8; }
+        #playbackUI { bottom: 20px; left: 50%; transform: translateX(-50%); width: 340px; display: flex; flex-direction: column; align-items: center; gap: 10px; border-color: #38bdf8; }
         .controls-row { display: flex; gap: 8px; justify-content: center; width: 100%; }
         .btn-play { background: #0ea5e9; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-weight: bold; transition: background 0.2s; }
         .btn-play:hover { background: #38bdf8; }
@@ -37,52 +37,27 @@
         .label-orquidea { border-color: #a855f7; color: #d8b4fe; }
     </style>
     <script type="importmap">
-        {
-            "imports": {
-                "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
-                "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
-            }
-        }
+        { "imports": { "three": "https://unpkg.com/three@0.160.0/build/three.module.js", "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/" } }
     </script>
 </head>
 <body>
     <div id="currentView" class="panel">
-        <div style="text-align: center; color: #e2e8f0; font-size: 12px; margin-bottom:5px; border-bottom: 1px solid #475569; padding-bottom:4px; font-weight:bold;">WMS Digital Twin</div>
-        <div style="font-size: 11px; color: #94a3b8; margin-top:5px;">Fase del Proceso:</div>
-        <div id="phaseStatus" style="font-size: 12px; color: #38bdf8; font-weight: bold; min-height: 18px;">Iniciando...</div>
-        <div style="font-size: 10px; color: #94a3b8; margin-top:8px;">Cajas procesadas: <span id="plantBoxesCount" style="color:#fff;">0</span>/12</div>
-        <div style="font-size: 10px; color: #f87171;">Rechazadas (QC): <span id="rejectedCount">0</span></div>
-        <div style="margin-top: 8px; border-top: 1px dashed #334155; padding-top: 5px;">
-            <div style="font-size: 10px; color: #fda4af;">🌹 Inventario Rosas: <span id="invRosas" style="font-weight:bold; color:white;">0</span></div>
-            <div style="font-size: 10px; color: #d8b4fe;">🌸 Inv. Orquídeas: <span id="invOrquideas" style="font-weight:bold; color:white;">0</span></div>
-        </div>
+        <div style="text-align: center; font-weight:bold; border-bottom: 1px solid #475569; padding-bottom:4px;">WMS Digital Twin</div>
+        <div style="font-size: 11px; color: #94a3b8; margin-top:5px;">Proceso Principal (Camión):</div>
+        <div id="phaseStatus" style="font-size: 12px; color: #38bdf8; font-weight: bold;">Iniciando...</div>
+        <div class="status-row"><span>Progreso Lote:</span> <span><span id="plantBoxesCount">0</span>/12</span></div>
+        <div class="status-row"><span>Rechazos QC:</span> <span id="rejectedCount" style="color:#f87171;">0</span></div>
+        
+        <div style="margin-top: 8px; border-top: 1px dashed #334155; padding-top: 5px; font-size: 11px; color: #94a3b8;">Inventario Consolidado (Racks):</div>
+        <div style="font-size: 12px; color: #fda4af; margin-top: 3px;">🌹 Rosas: <span id="invRosas" style="font-weight:bold; color:white;">0</span></div>
+        <div style="font-size: 12px; color: #d8b4fe; margin-top: 3px;">🌸 Orquídeas: <span id="invOrquideas" style="font-weight:bold; color:white;">0</span></div>
     </div>
     
     <div id="hubUI" class="panel">
-        <h3>📡 Control RFID</h3>
+        <h3>📡 Control RFID Planta</h3>
         <div class="hub-row"><span>Hub 1 (Bandas):</span><span class="hub-counter" id="hub1Count">0</span></div>
         <div class="hub-row"><span>Hub 2 (Almacén):</span><span class="hub-counter" id="hub2Count">0</span></div>
-    </div>
-
-    <div id="mouseControl" class="panel">
-        <b>Controles Cámara:</b>
-        <div>🖱️ Click izq + arrastrar · Rotar</div>
-        <div>🖱️ Rueda · Zoom</div>
-        <div>🖱️ Click der + arrastrar · Mover</div>
-    </div>
-
-    <div id="playbackUI" class="panel">
-        <div class="controls-row">
-            <button class="btn-speed" id="btnReset" title="Retroceder al inicio">⏮️ Reiniciar</button>
-            <button class="btn-play" id="btnPlayPause">⏸️ Pausar</button>
-            <button class="btn-speed active" id="btnSpeed1" data-speed="1">▶️ x1</button>
-            <button class="btn-speed" id="btnSpeed2" data-speed="2">⏩ x2</button>
-            <button class="btn-speed" id="btnSpeed4" data-speed="4">⏭️ x4</button>
-        </div>
-        <div style="font-size: 10px; color: #94a3b8; align-self: flex-start;">Progreso del Lote:</div>
-        <div class="progress-track">
-            <div class="progress-fill" id="batchProgress"></div>
-        </div>
+        <div class="hub-row"><span>Hub Superior Izq (Garruchas):</span><span class="hub-counter" id="hubGarruchaCount">0</span></div>
     </div>
 
     <div id="tabletUI" class="panel">
@@ -94,245 +69,247 @@
         <div style="text-align: center; margin-top: 10px;" id="matchStatus" class="status-loading">Verificando...</div>
     </div>
 
+    <div id="playbackUI" class="panel">
+        <div class="controls-row">
+            <button class="btn-speed" id="btnReset">⏮️ Reiniciar Simulador</button>
+            <button class="btn-play" id="btnPlayPause">⏸️ Pausar</button>
+            <button class="btn-speed active" id="btnSpeed1" data-speed="1">▶️ x1</button>
+            <button class="btn-speed" id="btnSpeed2" data-speed="2">⏩ x2</button>
+            <button class="btn-speed" id="btnSpeed4" data-speed="4">⏭️ x4</button>
+        </div>
+        <div style="font-size: 10px; color: #94a3b8; align-self: flex-start; margin-top:5px;">Progreso Lote Camión:</div>
+        <div class="progress-track"><div class="progress-fill" id="batchProgress"></div></div>
+    </div>
+
     <script type="module">
         import * as THREE from 'three';
         import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
         import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
 
-        // --- CONFIGURACIÓN BÁSICA ---
-        const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x0a101f);
+        // --- VARIABLES GLOBALES ---
+        let matrixSlotsUsed = { 'Rosa': 0, 'Orquidea': 0 };
+        let inventory = { 'Rosa': 0, 'Orquidea': 0 };
+        
+        const uiInvRosas = document.getElementById('invRosas');
+        const uiInvOrquideas = document.getElementById('invOrquideas');
+        const uiPhase = document.getElementById('phaseStatus');
+        const uiPlantCount = document.getElementById('plantBoxesCount');
+        const uiRejected = document.getElementById('rejectedCount');
+        const uiHub1 = document.getElementById('hub1Count');
+        const uiHub2 = document.getElementById('hub2Count');
+        const uiHubGarrucha = document.getElementById('hubGarruchaCount');
+        const uiProgress = document.getElementById('batchProgress');
+        
+        const tabletUI = document.getElementById('tabletUI');
+        const uiScannedBoxes = document.getElementById('scannedBoxes');
+        const uiMatchStatus = document.getElementById('matchStatus');
+
+        // --- CONFIGURACIÓN DE ESCENA ---
+        const scene = new THREE.Scene(); 
+        scene.background = new THREE.Color(0x0a101f); 
         scene.fog = new THREE.FogExp2(0x0a101f, 0.0012);
-
-        const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 1000);
-        camera.position.set(-80, 180, 220); 
-        camera.lookAt(0, 0, 20);
-
-        const renderer = new THREE.WebGLRenderer({ antialias: true });
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.shadowMap.enabled = true;
+        
+        const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 2000);
+        camera.position.set(-140, 260, 220); 
+        camera.lookAt(-50, 0, 0); 
+        
+        const renderer = new THREE.WebGLRenderer({ antialias: true }); 
+        renderer.setSize(window.innerWidth, window.innerHeight); 
+        renderer.shadowMap.enabled = true; 
         document.body.appendChild(renderer.domElement);
-
-        const labelRenderer = new CSS2DRenderer();
-        labelRenderer.setSize(window.innerWidth, window.innerHeight);
-        labelRenderer.domElement.style.position = 'absolute';
-        labelRenderer.domElement.style.top = '0px';
-        labelRenderer.domElement.style.pointerEvents = 'none';
+        
+        const labelRenderer = new CSS2DRenderer(); 
+        labelRenderer.setSize(window.innerWidth, window.innerHeight); 
+        labelRenderer.domElement.style.position = 'absolute'; 
+        labelRenderer.domElement.style.top = '0px'; 
+        labelRenderer.domElement.style.pointerEvents = 'none'; 
         document.body.appendChild(labelRenderer.domElement);
-
-        const controls = new OrbitControls(camera, renderer.domElement);
-        controls.enableDamping = true;
-        controls.target.set(-20, 0, 20);
+        
+        const controls = new OrbitControls(camera, renderer.domElement); 
+        controls.enableDamping = true; 
+        controls.target.set(-50, 0, 0);
 
         // --- ILUMINACIÓN ---
         scene.add(new THREE.AmbientLight(0xffffff, 0.4));
-        const dirLight = new THREE.DirectionalLight(0xffffff, 1.2);
-        dirLight.position.set(50, 200, 100);
+        const dirLight = new THREE.DirectionalLight(0xffffff, 1.2); 
+        dirLight.position.set(50, 300, 100); 
         dirLight.castShadow = true;
-        dirLight.shadow.camera.top = 200; dirLight.shadow.camera.bottom = -200;
-        dirLight.shadow.camera.left = -200; dirLight.shadow.camera.right = 200;
-        dirLight.shadow.mapSize.set(2048, 2048);
+        dirLight.shadow.camera.top = 300; dirLight.shadow.camera.bottom = -300; 
+        dirLight.shadow.camera.left = -300; dirLight.shadow.camera.right = 300; 
+        dirLight.shadow.mapSize.set(2048, 2048); 
         scene.add(dirLight);
 
-        // --- ENTORNO GLOBAL ---
-        const floorGeo = new THREE.PlaneGeometry(500, 400);
-        const floorMat = new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.9 });
-        const floor = new THREE.Mesh(floorGeo, floorMat);
+        const floor = new THREE.Mesh(new THREE.PlaneGeometry(1000, 800), new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.9 })); 
         floor.rotation.x = -Math.PI / 2; floor.receiveShadow = true; scene.add(floor);
-        const grid = new THREE.GridHelper(500, 100, 0x1e293b, 0x1e293b); grid.position.y = 0.1; scene.add(grid);
+        scene.add(new THREE.GridHelper(1000, 200, 0x1e293b, 0x1e293b));
 
+        // --- FUNCIONES DE UTILIDAD ---
         function createLabel(text, position, parent, customClass = '') {
-            const div = document.createElement('div');
-            div.className = 'label ' + customClass;
-            div.textContent = text;
-            const label = new CSS2DObject(div);
-            label.position.copy(position);
-            parent.add(label);
-            return label;
+            const div = document.createElement('div'); div.className = 'label ' + customClass; div.textContent = text;
+            const label = new CSS2DObject(div); label.position.copy(position); parent.add(label); return label;
         }
 
         function createHumanoid(color) {
-            const group = new THREE.Group();
-            const mat = new THREE.MeshStandardMaterial({ color: color });
-            const head = new THREE.Mesh(new THREE.SphereGeometry(1.5), mat); head.position.y = 5; head.castShadow = true;
-            const body = new THREE.Mesh(new THREE.BoxGeometry(2.5, 3.5, 1.5), mat); body.position.y = 2.5; body.castShadow = true;
-            group.add(head, body); return group;
+            const g = new THREE.Group(); const m = new THREE.MeshStandardMaterial({ color: color });
+            const head = new THREE.Mesh(new THREE.SphereGeometry(1.5), m); head.position.y = 5; head.castShadow = true;
+            const body = new THREE.Mesh(new THREE.BoxGeometry(2.5, 3.5, 1.5), m); body.position.y = 2.5; body.castShadow = true;
+            g.add(head, body); return g;
         }
 
-        // --- PLANTA PRINCIPAL ---
-        const mainPlantGroup = new THREE.Group();
-        mainPlantGroup.position.set(-50, 0, 0); 
-        scene.add(mainPlantGroup);
+        function createBoxMesh(flowerType) {
+             const box = new THREE.Mesh(new THREE.BoxGeometry(2.8, 2.8, 2.8), new THREE.MeshStandardMaterial({ color: 0xca8a04 })); box.castShadow = true;
+             const rfid = new THREE.Mesh(new THREE.PlaneGeometry(1.2, 1.2), new THREE.MeshBasicMaterial({ color: 0xffffff })); 
+             rfid.position.set(0, 1.41, 0); rfid.rotation.x = -Math.PI/2; box.add(rfid);
+             const bandColor = flowerType === 'Rosa' ? 0xf43f5e : 0xa855f7;
+             box.add(new THREE.Mesh(new THREE.BoxGeometry(2.9, 0.6, 2.9), new THREE.MeshBasicMaterial({ color: bandColor })));
+             return box;
+        }
 
+        function applyLabelToBox(boxMesh, xOffset = -1.41) {
+            const sideLabel = new THREE.Mesh(new THREE.PlaneGeometry(1.5, 1), new THREE.MeshBasicMaterial({color: 0xffffff}));
+            sideLabel.position.set(xOffset, 0, 0); sideLabel.rotation.y = -Math.PI/2;
+            const barcode = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.6, 0.01), new THREE.MeshBasicMaterial({color: 0x000000}));
+            barcode.position.set(0, 0, 0.01); sideLabel.add(barcode); boxMesh.add(sideLabel);
+        }
+
+        function createCartWithWorker() { 
+            const g = new THREE.Group(); 
+            const base = new THREE.Mesh(new THREE.BoxGeometry(4, 0.5, 3), new THREE.MeshStandardMaterial({ color: 0x475569 })); base.position.y = 0.5;
+            const worker = createHumanoid(0x38bdf8); worker.position.set(3, 0, 0); worker.rotation.y = -Math.PI/2;
+            g.add(base, worker); return g; 
+        }
+
+        // --- 1. PLANTA PRINCIPAL E INFRAESTRUCTURA ---
+        const mainPlantGroup = new THREE.Group(); mainPlantGroup.position.set(-50, 0, 0); scene.add(mainPlantGroup);
         const plantFloorMat = new THREE.MeshStandardMaterial({ color: 0x1d4ed8 }); 
         
-        // Suelo Almacén
-        const storageFloor = new THREE.Mesh(new THREE.BoxGeometry(120, 2, 60), plantFloorMat);
-        storageFloor.position.set(0, 1, -20); storageFloor.receiveShadow = true; mainPlantGroup.add(storageFloor);
-        
-        // Suelo Recepción (Interior)
-        const receptionFloor = new THREE.Mesh(new THREE.BoxGeometry(60, 2, 50), plantFloorMat);
-        receptionFloor.position.set(-30, 1, 35); receptionFloor.receiveShadow = true; mainPlantGroup.add(receptionFloor);
-        
-        // NUEVO: Plataforma de Muelle Exterior
-        const dockFloor = new THREE.Mesh(new THREE.BoxGeometry(30, 2, 50), plantFloorMat);
-        dockFloor.position.set(15, 1, 35); dockFloor.receiveShadow = true; mainPlantGroup.add(dockFloor);
+        const storageFloor = new THREE.Mesh(new THREE.BoxGeometry(120, 2, 60), plantFloorMat); storageFloor.position.set(0, 1, -20); storageFloor.receiveShadow = true;
+        const receptionFloor = new THREE.Mesh(new THREE.BoxGeometry(60, 2, 50), plantFloorMat); receptionFloor.position.set(-30, 1, 35); receptionFloor.receiveShadow = true;
+        const dockFloor = new THREE.Mesh(new THREE.BoxGeometry(30, 2, 50), plantFloorMat); dockFloor.position.set(15, 1, 35); dockFloor.receiveShadow = true;
+        mainPlantGroup.add(storageFloor, receptionFloor, dockFloor);
 
-        // Paredes
+        // PAREDES: La pared superior (Z=-50) tiene DOS puertas de 14 de ancho
+        // Puerta Izquierda: X=-40. Puerta Derecha: X=40. Ancho total pared = 120 (de -60 a 60).
         const wallMat = new THREE.MeshStandardMaterial({ color: 0x0ea5e9, transparent: true, opacity: 0.25, side: THREE.DoubleSide });
-        const sWallTop = new THREE.Mesh(new THREE.BoxGeometry(120, 25, 2), wallMat); sWallTop.position.set(0, 13.5, -50);
+        
+        const sWallTop1 = new THREE.Mesh(new THREE.BoxGeometry(13, 25, 2), wallMat); sWallTop1.position.set(-53.5, 13.5, -50);
+        const sWallTop2 = new THREE.Mesh(new THREE.BoxGeometry(66, 25, 2), wallMat); sWallTop2.position.set(0, 13.5, -50);
+        const sWallTop3 = new THREE.Mesh(new THREE.BoxGeometry(13, 25, 2), wallMat); sWallTop3.position.set(53.5, 13.5, -50);
+        
+        const lintelTop1 = new THREE.Mesh(new THREE.BoxGeometry(14, 10, 2), wallMat); lintelTop1.position.set(-40, 21, -50);
+        const lintelTop2 = new THREE.Mesh(new THREE.BoxGeometry(14, 10, 2), wallMat); lintelTop2.position.set(40, 21, -50);
+        mainPlantGroup.add(sWallTop1, sWallTop2, sWallTop3, lintelTop1, lintelTop2);
+
         const sWallRight = new THREE.Mesh(new THREE.BoxGeometry(2, 25, 60), wallMat); sWallRight.position.set(60, 13.5, -20);
         const sWallBotRight = new THREE.Mesh(new THREE.BoxGeometry(60, 25, 2), wallMat); sWallBotRight.position.set(30, 13.5, 10);
         const sWallLeft = new THREE.Mesh(new THREE.BoxGeometry(2, 25, 60), wallMat); sWallLeft.position.set(-60, 13.5, -20);
-        mainPlantGroup.add(sWallTop, sWallRight, sWallBotRight, sWallLeft);
+        mainPlantGroup.add(sWallRight, sWallBotRight, sWallLeft);
 
         const rWallLeft = new THREE.Mesh(new THREE.BoxGeometry(2, 25, 50), wallMat); rWallLeft.position.set(-60, 13.5, 35);
         const rWallBot = new THREE.Mesh(new THREE.BoxGeometry(60, 25, 2), wallMat); rWallBot.position.set(-30, 13.5, 60);
         mainPlantGroup.add(rWallLeft, rWallBot);
 
-        // NUEVO: Pared del Muelle con aperturas para las bandas
-        const dockWallGroup = new THREE.Group();
+        const dockWall = new THREE.Group();
         const dockTop = new THREE.Mesh(new THREE.BoxGeometry(2, 15, 50), wallMat); dockTop.position.set(0, 18.5, 35);
-        // Pilares que dejan 3 huecos exactos para las bandas
         const p1 = new THREE.Mesh(new THREE.BoxGeometry(2, 11, 12), wallMat); p1.position.set(0, 6.5, 16);
         const p2 = new THREE.Mesh(new THREE.BoxGeometry(2, 11, 2), wallMat); p2.position.set(0, 6.5, 29);
         const p3 = new THREE.Mesh(new THREE.BoxGeometry(2, 11, 2), wallMat); p3.position.set(0, 6.5, 37);
         const p4 = new THREE.Mesh(new THREE.BoxGeometry(2, 11, 16), wallMat); p4.position.set(0, 6.5, 52);
-        dockWallGroup.add(dockTop, p1, p2, p3, p4);
-        mainPlantGroup.add(dockWallGroup);
+        dockWall.add(dockTop, p1, p2, p3, p4); mainPlantGroup.add(dockWall);
 
         const iWall1 = new THREE.Mesh(new THREE.BoxGeometry(20, 25, 2), wallMat); iWall1.position.set(-50, 13.5, 10);
         const iWall2 = new THREE.Mesh(new THREE.BoxGeometry(20, 25, 2), wallMat); iWall2.position.set(-10, 13.5, 10);
         const iDintel = new THREE.Mesh(new THREE.BoxGeometry(20, 10, 2), wallMat); iDintel.position.set(-30, 21, 10);
         mainPlantGroup.add(iWall1, iWall2, iDintel);
 
-        // --- PUERTAS Y HUBS RFID ---
+        // --- ARCOS Y LECTORES RFID ---
         const hubFrameMat = new THREE.MeshBasicMaterial({ color: 0xf97316, transparent: true, opacity: 0.6 });
         const hubDeviceMat = new THREE.MeshStandardMaterial({ color: 0x0f172a, metalness: 0.5 });
 
         function createRFIDDoor(x, z, width, labelName, rotY=0) {
             const group = new THREE.Group();
-            const p1 = new THREE.Mesh(new THREE.BoxGeometry(3, 11, 0.5), hubFrameMat); p1.position.set(-width/2, 6.5, 0);
-            const p2 = new THREE.Mesh(new THREE.BoxGeometry(3, 11, 0.5), hubFrameMat); p2.position.set(width/2, 6.5, 0);
+            const pt1 = new THREE.Mesh(new THREE.BoxGeometry(3, 11, 0.5), hubFrameMat); pt1.position.set(-width/2, 6.5, 0);
+            const pt2 = new THREE.Mesh(new THREE.BoxGeometry(3, 11, 0.5), hubFrameMat); pt2.position.set(width/2, 6.5, 0);
             const beam = new THREE.Mesh(new THREE.BoxGeometry(width + 1, 0.5, 3), hubFrameMat); beam.position.set(0, 11.75, 0);
             const dev = new THREE.Mesh(new THREE.BoxGeometry(2.5, 4, 1.5), hubDeviceMat); dev.position.set(-width/2 + 1.5, 8, 1);
-            group.add(p1, p2, beam, dev);
-            group.position.set(x, 0, z); group.rotation.y = rotY; mainPlantGroup.add(group);
-            createLabel(labelName, new THREE.Vector3(x, 14, z), mainPlantGroup);
-            return { mat: hubFrameMat }; 
+            group.add(pt1, pt2, beam, dev); group.position.set(x, 0, z); group.rotation.y = rotY; 
+            mainPlantGroup.add(group); createLabel(labelName, new THREE.Vector3(x, 14, z), mainPlantGroup);
+            return { group: group, beam: beam };
         }
 
-        const hub2Door = createRFIDDoor(-30, 10, 20, "Hub 2 (Ingreso)");
-        createRFIDDoor(-40, -50, 14, "Puerta Salida");
-        createRFIDDoor(40, -50, 14, "Puerta Salida");
+        // Puerta Interna
+        createRFIDDoor(-30, 10, 20, "Hub 2 (Almacén Central)");
+        // Puertas Superiores (Parte superior del almacenamiento)
+        const exitGateLeft = createRFIDDoor(-40, -50, 14, "Puerta Superior Izq (RFID Garruchas)");
+        createRFIDDoor(40, -50, 14, "Puerta Superior Derecha");
 
-        // --- ÁREA DE RECEPCIÓN: BANDAS ---
+        // Bandas Transporte
         const beltMat = new THREE.MeshStandardMaterial({ color: 0x475569, roughness: 0.8 });
-        // Bandas más largas (55) para que salgan por la pared hacia el muelle
         for(let i=0; i<3; i++) {
              const belt = new THREE.Mesh(new THREE.BoxGeometry(55, 1, 4), beltMat);
-             belt.position.set(2.5, 2.5, 25 + i * 8); // Atraviesan la pared en X=0
-             belt.receiveShadow = true; mainPlantGroup.add(belt);
+             belt.position.set(2.5, 2.5, 25 + i * 8); belt.receiveShadow = true; mainPlantGroup.add(belt);
         }
 
-        // Hub 1 movido AL INTERIOR de la planta (X = -10)
-        const hub1Device = new THREE.Mesh(new THREE.BoxGeometry(4, 8, 4), hubDeviceMat); hub1Device.position.set(-5, 4, 18); mainPlantGroup.add(hub1Device);
-        const hub1Screen = new THREE.Mesh(new THREE.PlaneGeometry(2.5, 3), new THREE.MeshBasicMaterial({ color: 0x0ea5e9 })); hub1Screen.position.set(-5, 5, 20.1); mainPlantGroup.add(hub1Screen);
-        const antennasArray = [];
+        // Hub 1
+        const hub1Device = new THREE.Mesh(new THREE.BoxGeometry(4, 8, 4), hubDeviceMat); hub1Device.position.set(-5, 4, 48); mainPlantGroup.add(hub1Device);
+        const hub1Screen = new THREE.Mesh(new THREE.PlaneGeometry(2.5, 3), new THREE.MeshBasicMaterial({ color: 0x0ea5e9 })); hub1Screen.position.set(-5, 5, 45.9); mainPlantGroup.add(hub1Screen);
+        
+        const antennas = [];
         for(let i=0; i<3; i++) {
-            const zPos = 25 + i * 8;
-            const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.2, 7), new THREE.MeshStandardMaterial({ color: 0x94a3b8 })); pole.position.set(-10, 3.5, zPos - 2.5); mainPlantGroup.add(pole);
-            const ring = new THREE.Mesh(new THREE.TorusGeometry(2.5, 0.15, 16, 32), new THREE.MeshBasicMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.4 })); 
-            ring.rotation.y = Math.PI / 2; ring.position.set(-10, 4, zPos); mainPlantGroup.add(ring);
-            antennasArray.push({ mesh: ring, timer: 0, active: false });
+            const z = 25 + i * 8;
+            const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.2, 7), new THREE.MeshStandardMaterial({ color: 0x94a3b8 })); pole.position.set(-10, 3.5, z - 2.5); mainPlantGroup.add(pole);
+            const ring = new THREE.Mesh(new THREE.TorusGeometry(2.5, 0.15, 16, 32), new THREE.MeshBasicMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.4 })); ring.rotation.y = Math.PI / 2; ring.position.set(-10, 4, z); mainPlantGroup.add(ring);
+            antennas.push({ mesh: ring, timer: 0, active: false });
         }
 
+        // Estaciones QC y Etiquetado
+        const qcGrp = new THREE.Group(); qcGrp.position.set(-15, 0, 16); mainPlantGroup.add(qcGrp);
+        const tableTop = new THREE.Mesh(new THREE.BoxGeometry(12, 0.5, 5), new THREE.MeshStandardMaterial({ color: 0xf59e0b })); tableTop.position.set(0, 4, 0); qcGrp.add(tableTop);
+        const qcInspector = createHumanoid(0xffff00); qcInspector.position.set(0, 2, -4); qcGrp.add(qcInspector);
+        const rejectArea = new THREE.Mesh(new THREE.CircleGeometry(4), new THREE.MeshBasicMaterial({color: 0xff0000, transparent: true, opacity: 0.3})); rejectArea.rotation.x = -Math.PI/2; rejectArea.position.set(10, 2.2, 0); qcGrp.add(rejectArea);
+        createLabel("Estación QC", new THREE.Vector3(0, 8, 0), qcGrp);
 
-        // --- ÁREA DE CALIDAD (QC) ---
-        const qcAreaGroup = new THREE.Group();
-        qcAreaGroup.position.set(-15, 0, 16); 
-        mainPlantGroup.add(qcAreaGroup);
+        const lblGrp = new THREE.Group(); lblGrp.position.set(-22, 0, 47); mainPlantGroup.add(lblGrp);
+        const lTable = new THREE.Mesh(new THREE.BoxGeometry(8, 0.5, 4), new THREE.MeshStandardMaterial({ color: 0x94a3b8 })); lTable.position.set(0, 3, 0); lblGrp.add(lTable);
+        const lPrinter = new THREE.Mesh(new THREE.BoxGeometry(2, 1.5, 2), new THREE.MeshStandardMaterial({ color: 0x333333 })); lPrinter.position.set(-2, 4, 0); lblGrp.add(lPrinter);
+        const labelWorker = createHumanoid(0x10b981); labelWorker.position.set(0, 2, -3.5); lblGrp.add(labelWorker);
+        createLabel("Etiquetado Lote Principal", new THREE.Vector3(0, 7, 0), lblGrp);
 
-        const tableTop = new THREE.Mesh(new THREE.BoxGeometry(12, 0.5, 5), new THREE.MeshStandardMaterial({ color: 0xf59e0b }));
-        tableTop.position.set(0, 4, 0);
-        const legMat = new THREE.MeshStandardMaterial({ color: 0x1e293b });
-        const tLeg1 = new THREE.Mesh(new THREE.BoxGeometry(0.5, 4, 0.5), legMat); tLeg1.position.set(-5.5, 2, -2);
-        const tLeg2 = new THREE.Mesh(new THREE.BoxGeometry(0.5, 4, 0.5), legMat); tLeg2.position.set(5.5, 2, -2);
-        const tLeg3 = new THREE.Mesh(new THREE.BoxGeometry(0.5, 4, 0.5), legMat); tLeg3.position.set(-5.5, 2, 2);
-        const tLeg4 = new THREE.Mesh(new THREE.BoxGeometry(0.5, 4, 0.5), legMat); tLeg4.position.set(5.5, 2, 2);
-        qcAreaGroup.add(tableTop, tLeg1, tLeg2, tLeg3, tLeg4);
-
-        const qcInspector = createHumanoid(0xffff00); 
-        qcInspector.position.set(0, 2, -4); 
-        qcAreaGroup.add(qcInspector);
-
-        const rejectArea = new THREE.Mesh(new THREE.CircleGeometry(4), new THREE.MeshBasicMaterial({color: 0xff0000, transparent: true, opacity: 0.3})); 
-        rejectArea.rotation.x = -Math.PI/2; 
-        rejectArea.position.set(10, 2.2, 0); 
-        qcAreaGroup.add(rejectArea);
-
-        createLabel("Estación QC", new THREE.Vector3(0, 8, 0), qcAreaGroup);
-
-
-        // --- ÁREA DE ALMACENAMIENTO ---
-        const centerStorageMat = new THREE.MeshStandardMaterial({ color: 0xf97316 });
-        const centerStorageFloor = new THREE.Mesh(new THREE.BoxGeometry(80, 0.5, 30), centerStorageMat);
-        centerStorageFloor.position.set(0, 2.1, -20); 
-        mainPlantGroup.add(centerStorageFloor);
-
-        function createMatrixRack(x, z, name, labelClass) {
-            const rackGroup = new THREE.Group();
-            const frameMat = new THREE.MeshStandardMaterial({ color: 0x64748b, metalness: 0.6, roughness: 0.4 });
-            const shelfMat = new THREE.MeshStandardMaterial({ color: 0x94a3b8 });
-            
+        // Racks de Almacenamiento
+        const rackRosas = { x: -20, z: -20 }, rackOrquideas = { x: 20, z: -20 };
+        [rackRosas, rackOrquideas].forEach((r, idx) => {
+            const rg = new THREE.Group(); rg.position.set(r.x, 0, r.z); mainPlantGroup.add(rg);
+            const fm = new THREE.MeshStandardMaterial({color:0x64748b}); const sm = new THREE.MeshStandardMaterial({color:0x94a3b8});
             for(let i=0; i<5; i++) {
-                const post1 = new THREE.Mesh(new THREE.BoxGeometry(0.5, 16, 0.5), frameMat); post1.position.set(-10 + i*5, 8, -2);
-                const post2 = new THREE.Mesh(new THREE.BoxGeometry(0.5, 16, 0.5), frameMat); post2.position.set(-10 + i*5, 8, 2);
-                rackGroup.add(post1, post2);
+                const p1 = new THREE.Mesh(new THREE.BoxGeometry(0.5,16,0.5),fm); p1.position.set(-10+i*5, 8, -2);
+                const p2 = new THREE.Mesh(new THREE.BoxGeometry(0.5,16,0.5),fm); p2.position.set(-10+i*5, 8, 2);
+                rg.add(p1, p2);
             }
             for(let j=0; j<3; j++) {
-                const shelf = new THREE.Mesh(new THREE.BoxGeometry(21, 0.3, 5), shelfMat); shelf.position.set(0, 3 + j*5, 0); rackGroup.add(shelf);
+                const shelf = new THREE.Mesh(new THREE.BoxGeometry(21,0.3,5),sm); shelf.position.set(0, 3+j*5, 0); rg.add(shelf);
             }
+            createLabel(idx===0?"Rack A: ROSAS":"Rack B: ORQUÍDEAS", new THREE.Vector3(r.x, 20, r.z), mainPlantGroup, idx===0?"label-rosa":"label-orquidea");
+        });
 
-            rackGroup.position.set(x, 0, z); mainPlantGroup.add(rackGroup);
-            createLabel(name, new THREE.Vector3(x, 20, z), mainPlantGroup, labelClass);
-            return { x: x, z: z };
+        function getMatrixTargetPosition(flowerType, slotIdx) {
+            const r = flowerType === 'Rosa' ? rackRosas : rackOrquideas;
+            return new THREE.Vector3(r.x - 7.5 + (slotIdx % 4 * 5), 4.5 + (Math.floor(slotIdx / 4) * 5), r.z);
         }
 
-        const rackRosas = createMatrixRack(-20, -20, "Rack A: ROSAS", "label-rosa");
-        const rackOrquideas = createMatrixRack(20, -20, "Rack B: ORQUÍDEAS", "label-orquidea");
-
-        function getMatrixTargetPosition(flowerType, slotIndex) {
-            const col = slotIndex % 4; const row = Math.floor(slotIndex / 4); 
-            const rack = flowerType === 'Rosa' ? rackRosas : rackOrquideas;
-            const targetX = rack.x - 7.5 + (col * 5); const targetY = 4.5 + (row * 5); const targetZ = rack.z; 
-            return new THREE.Vector3(targetX, targetY, targetZ);
-        }
-
-        // --- UTILIDADES ---
-        function createCartWithWorker() {
-            const group = new THREE.Group();
-            const cartMat = new THREE.MeshStandardMaterial({ color: 0x475569 });
-            const base = new THREE.Mesh(new THREE.BoxGeometry(4, 0.5, 3), cartMat); base.position.y = 0.5;
-            const handle = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.1, 4), cartMat); handle.position.set(1.8, 2.5, 0);
-            const worker = createHumanoid(0x38bdf8); worker.position.set(3, 0, 0); worker.rotation.y = -Math.PI/2;
-            group.add(base, handle, worker); return group;
-        }
-
+        // Trabajador Recepción Camión 
         const receiverWorker = createHumanoid(0x38bdf8); receiverWorker.position.set(25, 2, 30); mainPlantGroup.add(receiverWorker);
 
-        // --- FINCAS FALCOM ---
-        const falcomGroup = new THREE.Group();
-        falcomGroup.position.set(130, 0, -10); scene.add(falcomGroup);
-        const falcomBase = new THREE.Mesh(new THREE.BoxGeometry(60, 2, 40), new THREE.MeshStandardMaterial({ color: 0x573c2c })); falcomBase.position.y = 1; falcomGroup.add(falcomBase);
-        const printer = new THREE.Mesh(new THREE.BoxGeometry(5, 4, 5), new THREE.MeshStandardMaterial({ color: 0x333333 })); printer.position.set(-15, 3, 0); falcomGroup.add(printer);
-        const conveyorFalcom = new THREE.Mesh(new THREE.BoxGeometry(25, 0.5, 4), new THREE.MeshStandardMaterial({ color: 0x555555 })); conveyorFalcom.position.set(0, 2.5, 0); falcomGroup.add(conveyorFalcom);
-        const falcomWorker1 = createHumanoid(0xf97316); falcomWorker1.position.set(-15, 2, 5); falcomGroup.add(falcomWorker1);
 
-        // --- CAMIÓN DETALLADO ---
+        // --- 2. FINCA 1 (FALCOM - CARGA DE CAMIÓN RESTAURADA) ---
+        const falcomGroup = new THREE.Group(); falcomGroup.position.set(130, 0, -10); scene.add(falcomGroup);
+        const falcomBase = new THREE.Mesh(new THREE.BoxGeometry(60, 2, 40), new THREE.MeshStandardMaterial({ color: 0x573c2c })); falcomBase.position.y = 1; falcomGroup.add(falcomBase);
+        const f1Worker = createHumanoid(0xf97316); f1Worker.position.set(-15, 2, 5); falcomGroup.add(f1Worker);
+        
+        const f1Printer = new THREE.Mesh(new THREE.BoxGeometry(3, 4, 3), new THREE.MeshStandardMaterial({ color: 0x333333 })); f1Printer.position.set(-20, 2, 0); falcomGroup.add(f1Printer);
+        const f1Conveyor = new THREE.Mesh(new THREE.BoxGeometry(30, 0.5, 4), new THREE.MeshStandardMaterial({ color: 0x555555 })); f1Conveyor.position.set(-5, 2.5, 0); falcomGroup.add(f1Conveyor);
+
         function createDetailedTruck() {
             const truckGroup = new THREE.Group();
-            
             const redPaint = new THREE.MeshStandardMaterial({ color: 0xdc2626, roughness: 0.4, metalness: 0.3 });
             const silverMetal = new THREE.MeshStandardMaterial({ color: 0xe2e8f0, roughness: 0.3, metalness: 0.8 });
             const rubber = new THREE.MeshStandardMaterial({ color: 0x1c1917, roughness: 0.9 });
@@ -354,306 +331,342 @@
                 const w2 = new THREE.Mesh(wheelGeo, rubber); w2.position.set(pos[0], 1.8, -pos[1]);
                 truckGroup.add(w1, w2);
             });
-
-            const headLight = new THREE.Mesh(new THREE.BoxGeometry(0.5, 1, 6), new THREE.MeshBasicMaterial({ color: 0xfef08a })); headLight.position.set(-15.1, 3.5, 0);
-            const tailLight = new THREE.Mesh(new THREE.BoxGeometry(0.5, 1, 6), new THREE.MeshBasicMaterial({ color: 0xef4444 })); tailLight.position.set(16.1, 3.5, 0);
-            truckGroup.add(headLight, tailLight);
-
-            truckGroup.castShadow = true;
-            return truckGroup;
+            truckGroup.castShadow = true; return truckGroup;
         }
 
-        const truck = createDetailedTruck();
-        scene.add(truck);
+        const truck = createDetailedTruck(); scene.add(truck);
+        const posFalcom = new THREE.Vector3(140, 0, 10); const posMain = new THREE.Vector3(-15, 0, 35); truck.position.copy(posFalcom);
+
+
+        // --- 3. FINCA 2 (GARRUCHAS) ---
+        // Ubicada "arriba" de la puerta superior izquierda
+        // Posición Global: Planta está en X=-50. Puerta Izquierda en planta es X=-40, Z=-50. => Global Puerta es X=-90, Z=-50.
+        // Finca 2 va en X=-90, Z=-90
+        const farm2Group = new THREE.Group(); 
+        farm2Group.position.set(-90, 0, -90); 
+        scene.add(farm2Group);
         
-        const posFalcom = new THREE.Vector3(140, 0, 10); 
-        // El camión se cuadra perfectamente contra el muelle
-        const posMain = new THREE.Vector3(-15, 0, 35); 
-        truck.position.copy(posFalcom);
-        truck.rotation.y = 0; 
+        const farm2Floor = new THREE.Mesh(new THREE.BoxGeometry(50, 1, 40), new THREE.MeshStandardMaterial({ color: 0x78350f })); 
+        farm2Floor.position.y = 0.5; farm2Group.add(farm2Floor);
+        createLabel("Finca Pequeña (Garruchas)", new THREE.Vector3(0, 10, 0), farm2Group);
+
+        const farm2Worker = createHumanoid(0x8b5cf6); farm2Worker.position.set(0, 2, 25); farm2Group.add(farm2Worker);
+        const farm2Printer = new THREE.Mesh(new THREE.BoxGeometry(2, 3, 2), new THREE.MeshStandardMaterial({ color: 0x333333 })); farm2Printer.position.set(3, 1.5, 25); farm2Group.add(farm2Printer);
+        createLabel("Etiquetado Garruchas", new THREE.Vector3(1.5, 6, 25), farm2Group);
+
+        function createGarruchaCart(type) {
+            const group = new THREE.Group();
+            const base = new THREE.Mesh(new THREE.BoxGeometry(4, 0.5, 6), new THREE.MeshStandardMaterial({color: 0x475569})); base.position.y = 0.5;
+            const cage = new THREE.Mesh(new THREE.BoxGeometry(3.8, 6, 5.8), new THREE.MeshStandardMaterial({color: 0x94a3b8, wireframe: true, transparent: true, opacity: 0.3})); cage.position.y = 3.5;
+            
+            const content = new THREE.Group();
+            const bColor = type === 'Rosa' ? 0xf43f5e : 0xa855f7;
+            for(let i=0; i<3; i++) {
+                const b = new THREE.Mesh(new THREE.BoxGeometry(2, 1.5, 2), new THREE.MeshStandardMaterial({color: bColor}));
+                b.position.set(0, 1.5 + i*1.6, 0); 
+                content.add(b);
+            }
+            group.add(base, cage, content);
+            group.flowerType = type; group.content = content; 
+            return group;
+        }
+
+        let farm2Garruchas = []; 
+        for(let i=0; i<4; i++) {
+            const type = i % 2 === 0 ? 'Rosa' : 'Orquidea'; const mesh = createGarruchaCart(type); scene.add(mesh); // Añadidas a escena global
+            farm2Garruchas.push({ mesh: mesh, type: type, angle: i * (Math.PI/2), state: 'cycling', timer: 0, scanned: false });
+        }
 
 
-        // --- LÓGICA DE SIMULACIÓN Y REPRODUCCIÓN ---
-        let simState = 0; let timer = 0; let boxesInTruck = 0;
-        const expectedBoxes = 12; const rejectionIndex = 3; 
+        // --- LÓGICA DE SIMULACIÓN Y VARIABLES DE ESTADO ---
+        let simState = 0, timer = 0, expectedBoxes = 12;
+        let batchData = []; 
+        let boxesPlant = []; let boxesFalcom = [];
+        let spawnedAtFalcomCount = 0; let boxesInTruck = 0; let unloadedFromTruckCount = 0; let completedBoxes = 0;
         
-        let batchData = [];
-        let matrixSlotsUsed = { 'Rosa': 0, 'Orquidea': 0 };
-        let inventory = { 'Rosa': 0, 'Orquidea': 0 };
+        let hub1ScannedCount = 0, hub2ScannedCount = 0, hubGarCount = 0; let rejectedCount = 0;
+        let isPaused = false, timeMultiplier = 1;
+        let garruchaDispatchTimer = 0; let garGateTimer = 0;
 
-        let boxesFalcom = []; let boxesPlant = []; 
-        let rejectedCount = 0; let processedInPlantCount = 0; let completedBoxes = 0;
-        let hub1ScannedCount = 0; let hub2ScannedCount = 0; 
-        let hub2Active = false; let hub2Timer = 0; 
-
-        let isPaused = false; let timeMultiplier = 1;
-
-        const uiPhase = document.getElementById('phaseStatus');
-        const tabletUI = document.getElementById('tabletUI');
-        const uiScanned = document.getElementById('scannedBoxes');
-        const uiMatch = document.getElementById('matchStatus');
-        const uiPlantCount = document.getElementById('plantBoxesCount');
-        const uiRejected = document.getElementById('rejectedCount');
-        const uiHub1Count = document.getElementById('hub1Count');
-        const uiHub2Count = document.getElementById('hub2Count');
-        const uiProgressBar = document.getElementById('batchProgress');
-        const uiInvRosas = document.getElementById('invRosas');
-        const uiInvOrquideas = document.getElementById('invOrquideas');
-
-        const btnPlay = document.getElementById('btnPlayPause');
-        const btnReset = document.getElementById('btnReset');
-        const speedBtns = [document.getElementById('btnSpeed1'), document.getElementById('btnSpeed2'), document.getElementById('btnSpeed4')];
-
-        btnPlay.addEventListener('click', () => {
-            isPaused = !isPaused;
-            btnPlay.textContent = isPaused ? "▶️ Reanudar" : "⏸️ Pausar";
-            btnPlay.style.background = isPaused ? "#f59e0b" : "#0ea5e9";
+        document.getElementById('btnPlayPause').addEventListener('click', (e) => { 
+            isPaused = !isPaused; e.target.textContent = isPaused ? "▶️ Reanudar" : "⏸️ Pausar"; 
+            e.target.style.background = isPaused ? "#f59e0b" : "#0ea5e9";
         });
-        speedBtns.forEach(btn => {
+        document.querySelectorAll('.btn-speed').forEach(btn => {
             btn.addEventListener('click', (e) => {
-                speedBtns.forEach(b => b.classList.remove('active')); e.target.classList.add('active');
-                timeMultiplier = parseFloat(e.target.getAttribute('data-speed'));
+                document.querySelectorAll('.btn-speed').forEach(b => b.classList.remove('active')); 
+                e.target.classList.add('active'); timeMultiplier = parseFloat(e.target.getAttribute('data-speed'));
             });
         });
-        btnReset.addEventListener('click', resetSimulation);
+        document.getElementById('btnReset').addEventListener('click', resetSimulation);
 
-        function generateBatch() {
-            batchData = [];
-            for(let i=0; i<expectedBoxes; i++) { batchData.push(Math.random() > 0.5 ? 'Rosa' : 'Orquidea'); }
-        }
+        function generateBatch() { batchData = []; for(let i=0; i<expectedBoxes; i++) batchData.push(Math.random() > 0.5 ? 'Rosa' : 'Orquidea'); }
 
         function resetSimulation() {
-            boxesFalcom.forEach(b => falcomGroup.remove(b.mesh));
-            boxesPlant.forEach(b => {
-                mainPlantGroup.remove(b.mesh);
-                if(b.cart) mainPlantGroup.remove(b.cart);
-            });
+            boxesPlant.forEach(b => { mainPlantGroup.remove(b.mesh); if(b.cart) mainPlantGroup.remove(b.cart); });
+            boxesFalcom.forEach(b => { falcomGroup.remove(b.mesh); });
+            farm2Garruchas.forEach(g => scene.remove(g.mesh));
             
-            boxesFalcom = []; boxesPlant = []; 
-            rejectedCount = 0; processedInPlantCount = 0; boxesInTruck = 0; completedBoxes = 0;
-            hub1ScannedCount = 0; hub2ScannedCount = 0; hub2Active = false; hub2Timer = 0; timer = 0; simState = 0;
+            boxesPlant = []; boxesFalcom = []; farm2Garruchas = [];
+            simState = 0; timer = 0; spawnedAtFalcomCount = 0; boxesInTruck = 0; unloadedFromTruckCount = 0; completedBoxes = 0;
+            hub1ScannedCount = 0; hub2ScannedCount = 0; hubGarCount = 0; rejectedCount = 0; garruchaDispatchTimer = 0;
             
-            matrixSlotsUsed = { 'Rosa': 0, 'Orquidea': 0 };
-            inventory = { 'Rosa': 0, 'Orquidea': 0 };
-
+            matrixSlotsUsed = { 'Rosa': 0, 'Orquidea': 0 }; inventory = { 'Rosa': 0, 'Orquidea': 0 };
             uiPlantCount.textContent = "0"; uiRejected.textContent = "0";
-            uiHub1Count.textContent = "0"; uiHub2Count.textContent = "0";
-            uiInvRosas.textContent = "0"; uiInvOrquideas.textContent = "0";
-            uiProgressBar.style.width = "0%"; tabletUI.style.display = 'none';
+            uiHub1.textContent = "0"; uiHub2.textContent = "0"; uiHubGarrucha.textContent = "0";
+            uiInvRosas.textContent = "0"; uiInvOrquideas.textContent = "0"; uiProgress.style.width = "0%";
+            tabletUI.style.display = 'none';
 
-            truck.position.copy(posFalcom); truck.rotation.y = 0; 
-            receiverWorker.position.set(25, 2, 30);
-            isPaused = false; btnPlay.textContent = "⏸️ Pausar"; btnPlay.style.background = "#0ea5e9";
+            truck.position.copy(posFalcom); truck.rotation.y = 0; receiverWorker.position.set(25, 2, 30);
             
+            for(let i=0; i<4; i++) {
+                const type = i % 2 === 0 ? 'Rosa' : 'Orquidea'; const mesh = createGarruchaCart(type); scene.add(mesh);
+                farm2Garruchas.push({ mesh: mesh, type: type, angle: i * (Math.PI/2), state: 'cycling', timer: 0, scanned: false });
+            }
             generateBatch(); 
         }
 
-        function createBoxMesh(flowerType) {
-             const box = new THREE.Mesh(new THREE.BoxGeometry(2.8, 2.8, 2.8), new THREE.MeshStandardMaterial({ color: 0xca8a04 }));
-             box.castShadow = true;
-             const rfidTag = new THREE.Mesh(new THREE.PlaneGeometry(1.2, 1.2), new THREE.MeshBasicMaterial({ color: 0xffffff }));
-             rfidTag.position.set(0, 1.41, 0); rfidTag.rotation.x = -Math.PI/2; box.add(rfidTag);
-             const bandColor = flowerType === 'Rosa' ? 0xf43f5e : 0xa855f7;
-             const band = new THREE.Mesh(new THREE.BoxGeometry(2.9, 0.6, 2.9), new THREE.MeshBasicMaterial({ color: bandColor }));
-             box.add(band);
-             return box;
-        }
-
-        function spawnBoxAtFalcom() {
-            const fType = batchData[boxesFalcom.length];
-            const box = createBoxMesh(fType); box.position.set(-15, 4, 0);
-            falcomGroup.add(box); boxesFalcom.push({ mesh: box, progress: 0, type: fType });
-        }
-
-        function spawnBoxFromTruckToBelt(index) {
-            const beltIndex = index % 3; const zPos = 25 + beltIndex * 8; 
-            const fType = batchData[index];
-            // Aparecen en el muelle exterior, dentro del tráiler (X = 30)
-            const box = createBoxMesh(fType); box.position.set(30, 4, zPos); 
-            mainPlantGroup.add(box);
-            
-            boxesPlant.push({ 
-                mesh: box, progress: 0, index: index, beltZ: zPos, state: 'belt', qcTimer: 0, type: fType,
-                hub1Scanned: false, hub2Scanned: false, targetAssigned: false, targetShelfPos: null,
-                cart: null, path: [], pathIndex: 0
-            });
-            uiPlantCount.textContent = boxesPlant.length;
-        }
-
+        generateBatch();
         const clock = new THREE.Clock();
-        generateBatch(); 
 
         function animate() {
             requestAnimationFrame(animate);
-            const dt = clock.getDelta();
+            const delta = clock.getDelta() * timeMultiplier;
             
             if (!isPaused) {
-                const delta = dt * timeMultiplier;
-                timer += delta;
+                
+                // =========================================================
+                // PROCESO ALTERNO: GARRUCHAS INDEPENDIENTES
+                // =========================================================
+                garruchaDispatchTimer += delta;
+                if (garruchaDispatchTimer > 10) { 
+                    let g = farm2Garruchas.find(g => g.state === 'cycling');
+                    if (g) { g.state = 'moving_to_printer'; garruchaDispatchTimer = 0; }
+                }
 
+                farm2Garruchas.forEach(g => {
+                    if (g.state === 'cycling') {
+                        // Ovalo en Global (Centro X=-90, Z=-90)
+                        g.angle += delta * 0.5;
+                        g.mesh.position.set(-90 + 20 * Math.cos(g.angle), 0, -90 + 10 * Math.sin(g.angle));
+                    
+                    } else if (g.state === 'moving_to_printer') {
+                        // Impresora en Global (X=-90, Z=-65)
+                        g.mesh.position.lerp(new THREE.Vector3(-90, 0, -65), delta * 2);
+                        if (g.mesh.position.distanceTo(new THREE.Vector3(-90, 0, -65)) < 0.5) { g.state = 'labeling'; g.timer = 0; }
+                    
+                    } else if (g.state === 'labeling') {
+                        g.timer += delta;
+                        if (g.timer > 2) {
+                            // Etiquetas aplicadas a las cajas internas
+                            g.mesh.content.children.forEach(b => applyLabelToBox(b, -1.01));
+                            
+                            // Target global de Racks (Local a MainPlant que está en X=-50)
+                            const localTarget = getMatrixTargetPosition(g.type, matrixSlotsUsed[g.type]++);
+                            g.targetPosGlobal = new THREE.Vector3(localTarget.x - 50, 0, localTarget.z);
+                            
+                            // Ruta: Impresora -> Puerta(X=-90,Z=-50) -> Pasaje a Estante -> Estante
+                            g.path = [
+                                new THREE.Vector3(-90, 0, -50), 
+                                new THREE.Vector3(-90, 0, g.targetPosGlobal.z), 
+                                g.targetPosGlobal
+                            ];
+                            g.pIdx = 0; g.scanned = false; g.state = 'entering';
+                        }
+                    
+                    } else if (g.state === 'entering') {
+                        let target = g.path[g.pIdx];
+                        let dir = new THREE.Vector3().subVectors(target, g.mesh.position);
+                        if (dir.length() < delta * 15) {
+                            g.mesh.position.copy(target); g.pIdx++;
+                            if (g.pIdx >= g.path.length) { g.state = 'storing'; g.timer = 0; } else { g.mesh.lookAt(g.path[g.pIdx]); }
+                        } else {
+                            g.mesh.position.add(dir.normalize().multiplyScalar(delta * 15)); g.mesh.lookAt(target);
+                        }
+
+                        // Escáner RFID Puerta Garruchas (Global X=-90, Z=-50)
+                        if (!g.scanned && g.mesh.position.z > -52 && g.mesh.position.z < -48 && g.mesh.position.x > -92 && g.mesh.position.x < -88) {
+                            g.scanned = true;
+                            hubGarCount += 3; // 3 cajas en la garrucha
+                            uiHubGarrucha.textContent = hubGarCount;
+                            garGateTimer = 0.5;
+                        }
+                    
+                    } else if (g.state === 'storing') {
+                        g.timer += delta;
+                        if (g.timer > 1) {
+                            // Vaciar cajas en estante
+                            g.mesh.content.children.forEach((b, index) => {
+                                 const newBox = createBoxMesh(g.type); applyLabelToBox(newBox, -1.41);
+                                 const localTgt = new THREE.Vector3(g.targetPosGlobal.x + 50, 0, g.targetPosGlobal.z);
+                                 newBox.position.copy(localTgt); newBox.position.y += index * 2.8; newBox.rotation.y = Math.random() * 0.1;
+                                 mainPlantGroup.add(newBox);
+                            });
+                            g.mesh.content.clear(); 
+                            
+                            inventory[g.type] += 3;
+                            uiInvRosas.textContent = inventory['Rosa']; uiInvOrquideas.textContent = inventory['Orquidea'];
+                            
+                            g.path = [new THREE.Vector3(-90, 0, g.targetPosGlobal.z), new THREE.Vector3(-90, 0, -50), new THREE.Vector3(-90, 0, -70)];
+                            g.pIdx = 0; g.state = 'returning';
+                        }
+                    
+                    } else if (g.state === 'returning') {
+                        let target = g.path[g.pIdx];
+                        let dir = new THREE.Vector3().subVectors(target, g.mesh.position);
+                        if (dir.length() < delta * 15) {
+                            g.mesh.position.copy(target); g.pIdx++;
+                            if (g.pIdx >= g.path.length) {
+                                // Rellenar flores
+                                const bColor = g.type === 'Rosa' ? 0xf43f5e : 0xa855f7;
+                                for(let i=0; i<3; i++) {
+                                    const b = new THREE.Mesh(new THREE.BoxGeometry(2, 1.5, 2), new THREE.MeshStandardMaterial({color: bColor}));
+                                    b.position.set(0, 1.5 + i*1.6, 0); g.mesh.content.add(b);
+                                }
+                                g.state = 'cycling';
+                            } else { g.mesh.lookAt(g.path[g.pIdx]); }
+                        } else {
+                            g.mesh.position.add(dir.normalize().multiplyScalar(delta * 15)); g.mesh.lookAt(target);
+                        }
+                    }
+                });
+
+                // Luz Puerta RFID Superior Izquierda
+                if(garGateTimer > 0) {
+                    garGateTimer -= delta;
+                    exitGateLeft.beam.material.color.setHex(0x4ade80); exitGateLeft.beam.material.opacity = 1.0;
+                } else {
+                    exitGateLeft.beam.material.color.setHex(0xf97316); exitGateLeft.beam.material.opacity = 0.6;
+                }
+
+
+                // =========================================================
+                // PROCESO PRINCIPAL: CAMIÓN, TABLETA Y BANDAS
+                // =========================================================
+                timer += delta;
                 switch(simState) {
-                    case 0: 
-                        uiPhase.textContent = "1. Origen: Producción y Carga";
-                        if (timer > 0.6 && boxesInTruck < expectedBoxes) { spawnBoxAtFalcom(); timer = 0; }
+                    case 0: // Carga Camión
+                        uiPhase.textContent = "1. Origen: Cargando Camión";
+                        // Generar caja en Finca
+                        if (timer > 0.6 && spawnedAtFalcomCount < expectedBoxes) { 
+                            const type = batchData[spawnedAtFalcomCount]; 
+                            const box = createBoxMesh(type); box.position.set(-15, 4, 0);
+                            falcomGroup.add(box); 
+                            boxesFalcom.push({ mesh: box, progress: 0, type: type });
+                            spawnedAtFalcomCount++;
+                            timer = 0; 
+                        }
+                        // Animar banda Finca
                         for (let i = boxesFalcom.length - 1; i >= 0; i--) {
                             let b = boxesFalcom[i]; b.progress += delta * 1.2; b.mesh.position.x = -15 + (b.progress * 25);
-                            if (b.progress >= 1) {
-                                falcomGroup.remove(b.mesh); b.mesh.geometry.dispose(); b.mesh.material.dispose();
-                                boxesFalcom.splice(i, 1); boxesInTruck++; completedBoxes += 0.25; 
-                            }
+                            if (b.progress >= 1) { falcomGroup.remove(b.mesh); boxesFalcom.splice(i, 1); boxesInTruck++; }
                         }
-                        if (boxesInTruck >= expectedBoxes && boxesFalcom.length === 0) { 
-                            simState = 1; timer = 0; truck.rotation.y = Math.PI; 
-                        }
+                        if (boxesInTruck === expectedBoxes && boxesFalcom.length === 0) { simState = 1; timer = 0; truck.rotation.y = Math.PI; } 
                         break;
-
-                    case 1: 
-                        uiPhase.textContent = "2. Logística: Transporte a Planta";
-                        let travelProgress = Math.min(timer / 3, 1);
-                        truck.position.lerpVectors(posFalcom, posMain, travelProgress);
-                        truck.rotation.y = Math.PI; 
-
-                        if (travelProgress >= 1) { simState = 2; timer = 0; }
+                    
+                    case 1: // Viaje Camión
+                        uiPhase.textContent = "2. Logística: En Tránsito a Planta";
+                        truck.position.lerpVectors(posFalcom, posMain, Math.min(timer/3, 1)); truck.rotation.y = Math.PI; 
+                        if(timer > 3.5) { simState = 2; timer=0; } 
                         break;
-
-                    case 2: 
-                        uiPhase.textContent = "3. Recepción: Validación Exterior";
-                        if (timer < 1) receiverWorker.position.lerp(new THREE.Vector3(25, 2, 33), delta * 2);
-                        if (timer > 1 && timer < 1.1) { tabletUI.style.display = 'block'; uiScanned.textContent = "0"; uiMatch.className = "status-loading"; uiMatch.textContent = "Escaneando RFID..."; }
-                        if (timer > 1.5 && timer < 3.5) { uiScanned.textContent = Math.min(expectedBoxes, Math.floor((timer - 1.5) * 7)); }
-                        if (timer > 3.5) { uiScanned.textContent = expectedBoxes; uiMatch.textContent = "MATCH COMPLETO"; uiMatch.className = "status-ok"; }
+                    
+                    case 2: // Animación Operario y Tableta
+                        uiPhase.textContent = "3. Recepción: Validando Ingreso RFID";
+                        if (timer < 1) receiverWorker.position.lerp(new THREE.Vector3(30, 2, 35), delta * 2);
+                        if (timer > 1 && timer < 1.1) { tabletUI.style.display = 'block'; uiScannedBoxes.textContent = "0"; uiMatchStatus.className = "status-loading"; uiMatchStatus.textContent = "Escaneando RFID..."; }
+                        if (timer > 1.5 && timer < 3.5) { uiScannedBoxes.textContent = Math.min(expectedBoxes, Math.floor((timer - 1.5) * 7)); }
+                        if (timer > 3.5 && timer < 3.6) { uiScannedBoxes.textContent = expectedBoxes; uiMatchStatus.textContent = "MATCH COMPLETO"; uiMatchStatus.className = "status-ok"; }
                         if (timer > 5) { tabletUI.style.display = 'none'; simState = 3; timer = 0; receiverWorker.position.set(25, 2, 20); }
                         break;
-
-                    case 3: 
-                        uiPhase.textContent = "4. Planta: Calidad y Enrutamiento (Carts)";
-                        if(timer > 1.0 && processedInPlantCount < expectedBoxes) { spawnBoxFromTruckToBelt(processedInPlantCount); processedInPlantCount++; timer = 0; }
-
-                        boxesPlant.forEach(b => {
-                            if(b.state === 'belt') {
-                                b.progress += delta * 0.25;
-                                // Viajan a lo largo de los 55 puntos de la banda
-                                b.mesh.position.x = 30 - (b.progress * 55); 
-                                
-                                if (!b.hub1Scanned && b.mesh.position.x <= -10) {
-                                    b.hub1Scanned = true; hub1ScannedCount++; uiHub1Count.textContent = hub1ScannedCount;
-                                    let ringIndex = Math.round((b.beltZ - 25) / 8); 
-                                    if(antennasArray[ringIndex]) { antennasArray[ringIndex].active = true; antennasArray[ringIndex].timer = 0; }
-                                    completedBoxes += 0.25; 
-                                }
-
-                                if(b.mesh.position.x <= -15) { b.state = 'qc_check'; b.mesh.position.x = -15; } 
-
-                            } else if (b.state === 'qc_check') {
-                                b.qcTimer += delta; b.mesh.material.color.setHex(0xffff00); 
-
-                                if(b.qcTimer > 0.8) { 
-                                    if(b.index === rejectionIndex) {
-                                        b.state = 'rejected'; b.mesh.material.color.setHex(0xff0000); 
-                                        rejectedCount++; uiRejected.textContent = rejectedCount; completedBoxes += 0.5; 
-                                    } else { 
-                                        b.state = 'approved'; b.mesh.material.color.setHex(0x4ade80); 
-                                        if(!b.targetAssigned) {
-                                            b.targetShelfPos = getMatrixTargetPosition(b.type, matrixSlotsUsed[b.type]);
-                                            matrixSlotsUsed[b.type]++; b.targetAssigned = true;
-                                        }
-                                    }
-                                }
-                            } else if (b.state === 'rejected') {
-                                b.mesh.position.lerp(new THREE.Vector3(-5, 2.5, 16), delta * 2);
-                            } else if (b.state === 'approved') {
-                                 b.mesh.position.x -= delta * 15;
-                                 b.mesh.material.color.lerp(new THREE.Color(0xca8a04), delta*2); 
-                                 
-                                 if(b.mesh.position.x <= -25) {
-                                     b.state = 'waiting_for_cart';
-                                     b.cart = createCartWithWorker();
-                                     b.cart.position.set(-25, 0, b.beltZ);
-                                     mainPlantGroup.add(b.cart);
-                                     
-                                     b.mesh.position.set(0, 2, 0);
-                                     b.cart.add(b.mesh);
-                                     
-                                     b.path = [
-                                         new THREE.Vector3(-30, 0, b.beltZ), 
-                                         new THREE.Vector3(-30, 0, 10),      
-                                         new THREE.Vector3(b.targetShelfPos.x, 0, 10), 
-                                         new THREE.Vector3(b.targetShelfPos.x, 0, b.targetShelfPos.z) 
-                                     ];
-                                     b.pathIndex = 0;
-                                     b.state = 'on_cart';
-                                 }
-                            } else if (b.state === 'on_cart') {
-                                const target = b.path[b.pathIndex];
-                                const speed = delta * 18;
-                                const dir = new THREE.Vector3().subVectors(target, b.cart.position);
-                                const dist = dir.length();
-
-                                if (dist < speed) {
-                                    b.cart.position.copy(target);
-                                    b.pathIndex++;
-                                    if (b.pathIndex < b.path.length) { b.cart.lookAt(b.path[b.pathIndex]); } 
-                                    else { b.state = 'finished_storage'; }
-                                } else {
-                                    b.cart.position.add(dir.normalize().multiplyScalar(speed));
-                                    b.cart.lookAt(target);
-                                }
-
-                                if (!b.hub2Scanned && b.cart.position.z <= 12 && b.cart.position.z >= 8 && b.cart.position.x > -40 && b.cart.position.x < -20) {
-                                     b.hub2Scanned = true; hub2ScannedCount++; uiHub2Count.textContent = hub2ScannedCount;
-                                     hub2Active = true; hub2Timer = 0; completedBoxes += 0.25; 
-                                }
-
-                            } else if (b.state === 'finished_storage') {
-                                mainPlantGroup.add(b.mesh);
-                                b.mesh.position.copy(b.targetShelfPos);
-                                b.mesh.rotation.y = Math.random() * 0.2; 
-                                mainPlantGroup.remove(b.cart);
-                                completedBoxes += 0.25; 
-                                inventory[b.type]++;
-                                uiInvRosas.textContent = inventory['Rosa'];
-                                uiInvOrquideas.textContent = inventory['Orquidea'];
-                                b.state = 'done'; 
-                            }
-                        });
-
-                        antennasArray.forEach(ant => {
-                            if (ant.active) {
-                                ant.timer += delta; ant.mesh.scale.setScalar(1 + (ant.timer * 0.8)); ant.mesh.material.opacity = Math.max(0, 0.8 - (ant.timer * 2));
-                                ant.mesh.material.color.setHex(0x4ade80); 
-                                if (ant.timer > 0.4) { ant.active = false; ant.mesh.scale.setScalar(1); ant.mesh.material.opacity = 0.4; ant.mesh.material.color.setHex(0x38bdf8); }
-                            }
-                        });
-
-                        if (hub2Active) {
-                            hub2Timer += delta; hubFrameMat.color.setHex(0x4ade80); hubFrameMat.opacity = Math.max(0.2, 1.0 - (hub2Timer * 1.5));
-                            if (hub2Timer > 0.5) { hub2Active = false; hubFrameMat.color.setHex(0xf97316); hubFrameMat.opacity = 0.6; }
+                    
+                    case 3: // Planta (Descarga a Bandas)
+                        uiPhase.textContent = "4. Planta: Procesando Lote Principal";
+                        if(timer > 1.0 && unloadedFromTruckCount < expectedBoxes) { 
+                            const index = unloadedFromTruckCount;
+                            const beltIndex = index % 3; const zPos = 25 + beltIndex * 8; const type = batchData[index];
+                            const box = createBoxMesh(type); box.position.set(30, 4, zPos); mainPlantGroup.add(box);
+                            boxesPlant.push({ 
+                                mesh: box, type: type, state: 'belt', beltZ: zPos, progress: 0, qcTimer: 0, labelTimer: 0, targetPos: null, cart: null, path: [], pIdx: 0, index: index, scanned1: false, scanned2: false
+                            });
+                            unloadedFromTruckCount++;
+                            uiPlantCount.textContent = unloadedFromTruckCount;
+                            timer = 0; 
                         }
-
-                        if(processedInPlantCount === expectedBoxes && boxesPlant.every(b => b.state === 'done' || b.state === 'rejected')) {
-                             simState = 4; timer = 0;
-                        }
+                        if(completedBoxes >= expectedBoxes) { simState = 4; timer = 0; } 
                         break;
-
-                    case 4: 
+                    
+                    case 4: // Fin y Reinicio
                         uiPhase.textContent = "Lote Finalizado. Reiniciando...";
-                        if(timer > 3) { resetSimulation(); }
+                        if(timer > 3) resetSimulation(); 
                         break;
                 }
 
-                let pct = Math.min((completedBoxes / expectedBoxes) * 100, 100);
-                uiProgressBar.style.width = `${pct}%`;
-            }
+                // Lógica de Movimiento Cajas en Bandas y Carts
+                boxesPlant.forEach(b => {
+                    if(b.state === 'belt') { 
+                        b.progress += delta * 0.25; b.mesh.position.x = 30 - (b.progress * 55); 
+                        if (!b.scanned1 && b.mesh.position.x <= -10) { 
+                            b.scanned1=true; uiHub1.textContent = ++hub1ScannedCount; 
+                            const ant = antennas[Math.round((b.beltZ-25)/8)];
+                            if(ant) { ant.active=true; ant.timer=0; }
+                        }
+                        if(b.mesh.position.x <= -15) { b.state = 'qc_check'; b.mesh.position.x = -15; } 
+                    
+                    } else if (b.state === 'qc_check') { 
+                        b.qcTimer += delta; b.mesh.material.color.setHex(0xffff00); 
+                        if(b.qcTimer > 0.8) { 
+                            if(b.index === 3) { b.state='rejected'; b.mesh.material.color.setHex(0xff0000); uiRejected.textContent=++rejectedCount; completedBoxes++; } 
+                            else { b.state='approved'; b.mesh.material.color.setHex(0x4ade80); b.targetPos = getMatrixTargetPosition(b.type, matrixSlotsUsed[b.type]++); } 
+                        }
+                    
+                    } else if (b.state === 'rejected') { 
+                        b.mesh.position.lerp(new THREE.Vector3(10, 2.2, 16), delta * 2);
+                    
+                    } else if (b.state === 'approved') { 
+                         b.mesh.position.x -= delta * 15; b.mesh.material.color.lerp(new THREE.Color(0xca8a04), delta*2); 
+                         if(b.mesh.position.x <= -25) { b.state = 'labeling'; b.mesh.position.x = -25; b.labelTimer = 0; }
+                    
+                    } else if (b.state === 'labeling') { 
+                         b.labelTimer += delta;
+                         if (b.labelTimer > 0.6) {
+                             applyLabelToBox(b.mesh); 
+                             b.cart = createCartWithWorker(); b.cart.position.set(-25, 0, b.beltZ); mainPlantGroup.add(b.cart);
+                             b.mesh.position.set(0, 2, 0); b.cart.add(b.mesh);
+                             b.path = [new THREE.Vector3(-30, 0, b.beltZ), new THREE.Vector3(-30, 0, 10), new THREE.Vector3(b.targetPos.x, 0, 10), b.targetPos.clone().setY(0)];
+                             b.pIdx = 0; b.state = 'on_cart';
+                         }
+                    
+                    } else if (b.state === 'on_cart') { 
+                        const tgt = b.path[b.pIdx]; 
+                        const dir = new THREE.Vector3().subVectors(tgt, b.cart.position);
+                        if (dir.length() < delta*18) { 
+                            b.cart.position.copy(tgt); b.pIdx++; 
+                            if(b.pIdx >= b.path.length) b.state='finished_storage'; else b.cart.lookAt(b.path[b.pIdx]); 
+                        } else { 
+                            b.cart.position.add(dir.normalize().multiplyScalar(delta*18)); b.cart.lookAt(tgt); 
+                        }
+                        
+                        // Hub 2 Almacén Central (Z=10, X=-30)
+                        if (!b.scanned2 && Math.abs(b.cart.position.z - 10) < 2 && b.cart.position.x > -40 && b.cart.position.x < -20) { 
+                            b.scanned2=true; uiHub2.textContent = ++hub2ScannedCount; 
+                        }
+                    
+                    } else if (b.state === 'finished_storage') {
+                        mainPlantGroup.add(b.mesh); b.mesh.position.copy(b.targetPos); b.mesh.rotation.y = Math.random()*0.2; mainPlantGroup.remove(b.cart);
+                        inventory[b.type]++; uiInvRosas.textContent = inventory['Rosa']; uiInvOrquideas.textContent = inventory['Orquidea'];
+                        completedBoxes++; b.state = 'done'; 
+                    }
+                });
 
+                antennas.forEach(ant => { if (ant.active) { ant.timer+=delta; ant.mesh.scale.setScalar(1+(ant.timer*0.8)); ant.mesh.material.opacity=Math.max(0,0.8-(ant.timer*2)); ant.mesh.material.color.setHex(0x4ade80); if(ant.timer>0.4){ant.active=false;ant.mesh.scale.setScalar(1);ant.mesh.material.opacity=0.4;ant.mesh.material.color.setHex(0x38bdf8);}}});
+                uiProgress.style.width = `${Math.min((completedBoxes / expectedBoxes) * 100, 100)}%`;
+            }
             controls.update(); renderer.render(scene, camera); labelRenderer.render(scene, camera);
         }
-
+        
         animate();
-
-        window.addEventListener("resize", () => {
-            camera.aspect = window.innerWidth / window.innerHeight; camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight); labelRenderer.setSize(window.innerWidth, window.innerHeight);
-        });
+        
+        window.addEventListener("resize", () => { camera.aspect = window.innerWidth/window.innerHeight; camera.updateProjectionMatrix(); renderer.setSize(window.innerWidth,window.innerHeight); labelRenderer.setSize(window.innerWidth,window.innerHeight); });
     </script>
 </body>
 </html>
