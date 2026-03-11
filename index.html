@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Flower Processing Digital Twin - Detailed Truck & Animation</title>
+    <title>Flower Processing Digital Twin - Dock Doors Fixed</title>
     <style>
         body { margin: 0; overflow: hidden; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #0b0f19; color: white; user-select: none; }
         canvas { display: block; }
@@ -105,7 +105,6 @@
         scene.fog = new THREE.FogExp2(0x0a101f, 0.0012);
 
         const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 1000);
-        // Ajuste de cámara para ver la nueva llegada del camión
         camera.position.set(-80, 180, 220); 
         camera.lookAt(0, 0, 20);
 
@@ -166,11 +165,20 @@
         scene.add(mainPlantGroup);
 
         const plantFloorMat = new THREE.MeshStandardMaterial({ color: 0x1d4ed8 }); 
+        
+        // Suelo Almacén
         const storageFloor = new THREE.Mesh(new THREE.BoxGeometry(120, 2, 60), plantFloorMat);
         storageFloor.position.set(0, 1, -20); storageFloor.receiveShadow = true; mainPlantGroup.add(storageFloor);
+        
+        // Suelo Recepción (Interior)
         const receptionFloor = new THREE.Mesh(new THREE.BoxGeometry(60, 2, 50), plantFloorMat);
         receptionFloor.position.set(-30, 1, 35); receptionFloor.receiveShadow = true; mainPlantGroup.add(receptionFloor);
+        
+        // NUEVO: Plataforma de Muelle Exterior
+        const dockFloor = new THREE.Mesh(new THREE.BoxGeometry(30, 2, 50), plantFloorMat);
+        dockFloor.position.set(15, 1, 35); dockFloor.receiveShadow = true; mainPlantGroup.add(dockFloor);
 
+        // Paredes
         const wallMat = new THREE.MeshStandardMaterial({ color: 0x0ea5e9, transparent: true, opacity: 0.25, side: THREE.DoubleSide });
         const sWallTop = new THREE.Mesh(new THREE.BoxGeometry(120, 25, 2), wallMat); sWallTop.position.set(0, 13.5, -50);
         const sWallRight = new THREE.Mesh(new THREE.BoxGeometry(2, 25, 60), wallMat); sWallRight.position.set(60, 13.5, -20);
@@ -180,8 +188,18 @@
 
         const rWallLeft = new THREE.Mesh(new THREE.BoxGeometry(2, 25, 50), wallMat); rWallLeft.position.set(-60, 13.5, 35);
         const rWallBot = new THREE.Mesh(new THREE.BoxGeometry(60, 25, 2), wallMat); rWallBot.position.set(-30, 13.5, 60);
-        const rWallRight = new THREE.Mesh(new THREE.BoxGeometry(2, 25, 50), wallMat); rWallRight.position.set(0, 13.5, 35);
-        mainPlantGroup.add(rWallLeft, rWallBot, rWallRight);
+        mainPlantGroup.add(rWallLeft, rWallBot);
+
+        // NUEVO: Pared del Muelle con aperturas para las bandas
+        const dockWallGroup = new THREE.Group();
+        const dockTop = new THREE.Mesh(new THREE.BoxGeometry(2, 15, 50), wallMat); dockTop.position.set(0, 18.5, 35);
+        // Pilares que dejan 3 huecos exactos para las bandas
+        const p1 = new THREE.Mesh(new THREE.BoxGeometry(2, 11, 12), wallMat); p1.position.set(0, 6.5, 16);
+        const p2 = new THREE.Mesh(new THREE.BoxGeometry(2, 11, 2), wallMat); p2.position.set(0, 6.5, 29);
+        const p3 = new THREE.Mesh(new THREE.BoxGeometry(2, 11, 2), wallMat); p3.position.set(0, 6.5, 37);
+        const p4 = new THREE.Mesh(new THREE.BoxGeometry(2, 11, 16), wallMat); p4.position.set(0, 6.5, 52);
+        dockWallGroup.add(dockTop, p1, p2, p3, p4);
+        mainPlantGroup.add(dockWallGroup);
 
         const iWall1 = new THREE.Mesh(new THREE.BoxGeometry(20, 25, 2), wallMat); iWall1.position.set(-50, 13.5, 10);
         const iWall2 = new THREE.Mesh(new THREE.BoxGeometry(20, 25, 2), wallMat); iWall2.position.set(-10, 13.5, 10);
@@ -210,21 +228,22 @@
 
         // --- ÁREA DE RECEPCIÓN: BANDAS ---
         const beltMat = new THREE.MeshStandardMaterial({ color: 0x475569, roughness: 0.8 });
-        // Bandas comienzan en X=-25 y terminan en X=20 (Longitud 45)
+        // Bandas más largas (55) para que salgan por la pared hacia el muelle
         for(let i=0; i<3; i++) {
-             const belt = new THREE.Mesh(new THREE.BoxGeometry(45, 1, 4), beltMat);
-             belt.position.set(-2.5, 2.5, 25 + i * 8); // Centro en -2.5
+             const belt = new THREE.Mesh(new THREE.BoxGeometry(55, 1, 4), beltMat);
+             belt.position.set(2.5, 2.5, 25 + i * 8); // Atraviesan la pared en X=0
              belt.receiveShadow = true; mainPlantGroup.add(belt);
         }
 
-        const hub1Device = new THREE.Mesh(new THREE.BoxGeometry(4, 8, 4), hubDeviceMat); hub1Device.position.set(15, 4, 18); mainPlantGroup.add(hub1Device);
-        const hub1Screen = new THREE.Mesh(new THREE.PlaneGeometry(2.5, 3), new THREE.MeshBasicMaterial({ color: 0x0ea5e9 })); hub1Screen.position.set(15, 5, 20.1); mainPlantGroup.add(hub1Screen);
+        // Hub 1 movido AL INTERIOR de la planta (X = -10)
+        const hub1Device = new THREE.Mesh(new THREE.BoxGeometry(4, 8, 4), hubDeviceMat); hub1Device.position.set(-5, 4, 18); mainPlantGroup.add(hub1Device);
+        const hub1Screen = new THREE.Mesh(new THREE.PlaneGeometry(2.5, 3), new THREE.MeshBasicMaterial({ color: 0x0ea5e9 })); hub1Screen.position.set(-5, 5, 20.1); mainPlantGroup.add(hub1Screen);
         const antennasArray = [];
         for(let i=0; i<3; i++) {
             const zPos = 25 + i * 8;
-            const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.2, 7), new THREE.MeshStandardMaterial({ color: 0x94a3b8 })); pole.position.set(10, 3.5, zPos - 2.5); mainPlantGroup.add(pole);
+            const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.2, 7), new THREE.MeshStandardMaterial({ color: 0x94a3b8 })); pole.position.set(-10, 3.5, zPos - 2.5); mainPlantGroup.add(pole);
             const ring = new THREE.Mesh(new THREE.TorusGeometry(2.5, 0.15, 16, 32), new THREE.MeshBasicMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.4 })); 
-            ring.rotation.y = Math.PI / 2; ring.position.set(10, 4, zPos); mainPlantGroup.add(ring);
+            ring.rotation.y = Math.PI / 2; ring.position.set(-10, 4, zPos); mainPlantGroup.add(ring);
             antennasArray.push({ mesh: ring, timer: 0, active: false });
         }
 
@@ -300,7 +319,7 @@
             group.add(base, handle, worker); return group;
         }
 
-        const receiverWorker = createHumanoid(0x38bdf8); receiverWorker.position.set(30, 2, 30); mainPlantGroup.add(receiverWorker);
+        const receiverWorker = createHumanoid(0x38bdf8); receiverWorker.position.set(25, 2, 30); mainPlantGroup.add(receiverWorker);
 
         // --- FINCAS FALCOM ---
         const falcomGroup = new THREE.Group();
@@ -310,28 +329,24 @@
         const conveyorFalcom = new THREE.Mesh(new THREE.BoxGeometry(25, 0.5, 4), new THREE.MeshStandardMaterial({ color: 0x555555 })); conveyorFalcom.position.set(0, 2.5, 0); falcomGroup.add(conveyorFalcom);
         const falcomWorker1 = createHumanoid(0xf97316); falcomWorker1.position.set(-15, 2, 5); falcomGroup.add(falcomWorker1);
 
-        // --- CAMIÓN DETALLADO (NUEVO) ---
+        // --- CAMIÓN DETALLADO ---
         function createDetailedTruck() {
             const truckGroup = new THREE.Group();
             
-            // Materiales
             const redPaint = new THREE.MeshStandardMaterial({ color: 0xdc2626, roughness: 0.4, metalness: 0.3 });
             const silverMetal = new THREE.MeshStandardMaterial({ color: 0xe2e8f0, roughness: 0.3, metalness: 0.8 });
             const rubber = new THREE.MeshStandardMaterial({ color: 0x1c1917, roughness: 0.9 });
             const glass = new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.1, metalness: 0.9 });
             
-            // Cabina
             const cabBase = new THREE.Mesh(new THREE.BoxGeometry(6, 7, 8), redPaint); cabBase.position.set(-8, 4.5, 0);
             const cabNose = new THREE.Mesh(new THREE.BoxGeometry(4, 5, 7), redPaint); cabNose.position.set(-13, 3.5, 0);
             const windshield = new THREE.Mesh(new THREE.PlaneGeometry(5, 3), glass); windshield.position.set(-10.6, 6.5, 0); windshield.rotation.y = -Math.PI / 2;
             truckGroup.add(cabBase, cabNose, windshield);
 
-            // Tráiler
             const trailer = new THREE.Mesh(new THREE.BoxGeometry(20, 9, 8.5), silverMetal); trailer.position.set(6, 5.5, 0);
             const trailerDetail = new THREE.Mesh(new THREE.BoxGeometry(19, 8, 8.7), new THREE.MeshStandardMaterial({ color: 0xcbd5e1, metalness: 0.5 })); trailerDetail.position.set(6, 5.5, 0);
             truckGroup.add(trailer, trailerDetail);
 
-            // Ruedas
             const wheelGeo = new THREE.CylinderGeometry(1.8, 1.8, 1.2, 24); wheelGeo.rotateX(Math.PI/2);
             const wPos = [[-13, 4], [-8, 4], [12, 4], [15, 4]];
             wPos.forEach(pos => {
@@ -340,7 +355,6 @@
                 truckGroup.add(w1, w2);
             });
 
-            // Luces
             const headLight = new THREE.Mesh(new THREE.BoxGeometry(0.5, 1, 6), new THREE.MeshBasicMaterial({ color: 0xfef08a })); headLight.position.set(-15.1, 3.5, 0);
             const tailLight = new THREE.Mesh(new THREE.BoxGeometry(0.5, 1, 6), new THREE.MeshBasicMaterial({ color: 0xef4444 })); tailLight.position.set(16.1, 3.5, 0);
             truckGroup.add(headLight, tailLight);
@@ -352,11 +366,10 @@
         const truck = createDetailedTruck();
         scene.add(truck);
         
-        // Posiciones Actualizadas: Finca y Planta Principal (Frente a bandas)
         const posFalcom = new THREE.Vector3(140, 0, 10); 
-        const posMain = new THREE.Vector3(38, 0, 33); // Alineado al inicio de las bandas en X=20 aprox
+        // El camión se cuadra perfectamente contra el muelle
+        const posMain = new THREE.Vector3(-15, 0, 35); 
         truck.position.copy(posFalcom);
-        // Rotación inicial en finca (mirando hacia +X)
         truck.rotation.y = 0; 
 
 
@@ -428,8 +441,8 @@
             uiInvRosas.textContent = "0"; uiInvOrquideas.textContent = "0";
             uiProgressBar.style.width = "0%"; tabletUI.style.display = 'none';
 
-            truck.position.copy(posFalcom); truck.rotation.y = 0; // Reiniciar rotación
-            receiverWorker.position.set(30, 2, 30);
+            truck.position.copy(posFalcom); truck.rotation.y = 0; 
+            receiverWorker.position.set(25, 2, 30);
             isPaused = false; btnPlay.textContent = "⏸️ Pausar"; btnPlay.style.background = "#0ea5e9";
             
             generateBatch(); 
@@ -455,8 +468,8 @@
         function spawnBoxFromTruckToBelt(index) {
             const beltIndex = index % 3; const zPos = 25 + beltIndex * 8; 
             const fType = batchData[index];
-            // Aparece en la puerta trasera del camión (aprox X=22 en el grupo local)
-            const box = createBoxMesh(fType); box.position.set(22, 4, zPos); 
+            // Aparecen en el muelle exterior, dentro del tráiler (X = 30)
+            const box = createBoxMesh(fType); box.position.set(30, 4, zPos); 
             mainPlantGroup.add(box);
             
             boxesPlant.push({ 
@@ -479,7 +492,7 @@
                 timer += delta;
 
                 switch(simState) {
-                    case 0: // Carga en Finca
+                    case 0: 
                         uiPhase.textContent = "1. Origen: Producción y Carga";
                         if (timer > 0.6 && boxesInTruck < expectedBoxes) { spawnBoxAtFalcom(); timer = 0; }
                         for (let i = boxesFalcom.length - 1; i >= 0; i--) {
@@ -490,42 +503,39 @@
                             }
                         }
                         if (boxesInTruck >= expectedBoxes && boxesFalcom.length === 0) { 
-                            simState = 1; timer = 0; 
-                            // Girar camión para el viaje (mirando hacia -X)
-                            truck.rotation.y = Math.PI; 
+                            simState = 1; timer = 0; truck.rotation.y = Math.PI; 
                         }
                         break;
 
-                    case 1: // Viaje (Cabina adelante)
+                    case 1: 
                         uiPhase.textContent = "2. Logística: Transporte a Planta";
                         let travelProgress = Math.min(timer / 3, 1);
                         truck.position.lerpVectors(posFalcom, posMain, travelProgress);
-                        // Mantiene la rotación mirando hacia adelante durante el viaje
                         truck.rotation.y = Math.PI; 
 
                         if (travelProgress >= 1) { simState = 2; timer = 0; }
                         break;
 
-                    case 2: // Recepción
+                    case 2: 
                         uiPhase.textContent = "3. Recepción: Validación Exterior";
                         if (timer < 1) receiverWorker.position.lerp(new THREE.Vector3(25, 2, 33), delta * 2);
                         if (timer > 1 && timer < 1.1) { tabletUI.style.display = 'block'; uiScanned.textContent = "0"; uiMatch.className = "status-loading"; uiMatch.textContent = "Escaneando RFID..."; }
                         if (timer > 1.5 && timer < 3.5) { uiScanned.textContent = Math.min(expectedBoxes, Math.floor((timer - 1.5) * 7)); }
                         if (timer > 3.5) { uiScanned.textContent = expectedBoxes; uiMatch.textContent = "MATCH COMPLETO"; uiMatch.className = "status-ok"; }
-                        if (timer > 5) { tabletUI.style.display = 'none'; simState = 3; timer = 0; receiverWorker.position.set(30, 2, 30); }
+                        if (timer > 5) { tabletUI.style.display = 'none'; simState = 3; timer = 0; receiverWorker.position.set(25, 2, 20); }
                         break;
 
-                    case 3: // Planta
+                    case 3: 
                         uiPhase.textContent = "4. Planta: Calidad y Enrutamiento (Carts)";
                         if(timer > 1.0 && processedInPlantCount < expectedBoxes) { spawnBoxFromTruckToBelt(processedInPlantCount); processedInPlantCount++; timer = 0; }
 
                         boxesPlant.forEach(b => {
                             if(b.state === 'belt') {
                                 b.progress += delta * 0.25;
-                                // Movimiento en banda de X=20 hacia X=-25
-                                b.mesh.position.x = 20 - (b.progress * 45); 
+                                // Viajan a lo largo de los 55 puntos de la banda
+                                b.mesh.position.x = 30 - (b.progress * 55); 
                                 
-                                if (!b.hub1Scanned && b.mesh.position.x <= 10) {
+                                if (!b.hub1Scanned && b.mesh.position.x <= -10) {
                                     b.hub1Scanned = true; hub1ScannedCount++; uiHub1Count.textContent = hub1ScannedCount;
                                     let ringIndex = Math.round((b.beltZ - 25) / 8); 
                                     if(antennasArray[ringIndex]) { antennasArray[ringIndex].active = true; antennasArray[ringIndex].timer = 0; }
@@ -558,14 +568,12 @@
                                  if(b.mesh.position.x <= -25) {
                                      b.state = 'waiting_for_cart';
                                      b.cart = createCartWithWorker();
-                                     // Carretilla aparece al final de la banda
                                      b.cart.position.set(-25, 0, b.beltZ);
                                      mainPlantGroup.add(b.cart);
                                      
                                      b.mesh.position.set(0, 2, 0);
                                      b.cart.add(b.mesh);
                                      
-                                     // Ruta corregida para no chocar con mesa QC
                                      b.path = [
                                          new THREE.Vector3(-30, 0, b.beltZ), 
                                          new THREE.Vector3(-30, 0, 10),      
