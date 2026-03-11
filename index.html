@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Flower Processing Digital Twin - Matrix Storage</title>
+    <title>Flower Processing Digital Twin - QC Area Update</title>
     <style>
         body { margin: 0; overflow: hidden; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #0b0f19; color: white; user-select: none; }
         canvas { display: block; }
@@ -108,8 +108,8 @@
         scene.fog = new THREE.FogExp2(0x0a101f, 0.0012);
 
         const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 1000);
-        camera.position.set(-90, 150, 190); 
-        camera.lookAt(-40,0,0);
+        camera.position.set(-100, 160, 210); 
+        camera.lookAt(-40, 0, 30);
 
         const renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
@@ -125,7 +125,7 @@
 
         const controls = new OrbitControls(camera, renderer.domElement);
         controls.enableDamping = true;
-        controls.target.set(-30, 0, 10);
+        controls.target.set(-40, 0, 30);
 
         // --- ILUMINACIÓN ---
         scene.add(new THREE.AmbientLight(0xffffff, 0.4));
@@ -136,9 +136,9 @@
         dirLight.shadow.camera.left = -150; dirLight.shadow.camera.right = 150;
         scene.add(dirLight);
 
-        // --- ENTORNO ---
+        // --- ENTORNO GLOBAL ---
         const floorGeo = new THREE.PlaneGeometry(400, 300);
-        const floorMat = new THREE.MeshStandardMaterial({ color: 0x111827, roughness: 0.9 });
+        const floorMat = new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.9 });
         const floor = new THREE.Mesh(floorGeo, floorMat);
         floor.rotation.x = -Math.PI / 2; floor.receiveShadow = true; scene.add(floor);
         const grid = new THREE.GridHelper(400, 80, 0x1e293b, 0x1e293b); grid.position.y = 0.1; scene.add(grid);
@@ -161,24 +161,46 @@
             group.add(head, body); return group;
         }
 
-        // --- PLANTA PRINCIPAL ---
+        // --- PLANTA PRINCIPAL (LAYOUT EN L) ---
         const mainPlantGroup = new THREE.Group();
         mainPlantGroup.position.set(-80, 0, 0);
         scene.add(mainPlantGroup);
 
-        const mainBase = new THREE.Mesh(new THREE.BoxGeometry(140, 2, 100), new THREE.MeshStandardMaterial({ color: 0x1e293b }));
-        mainBase.position.y = 1; mainBase.receiveShadow = true; mainPlantGroup.add(mainBase);
-        
-        const mainStructure = new THREE.Mesh(new THREE.BoxGeometry(138, 25, 98), new THREE.MeshStandardMaterial({ color: 0x0ea5e9, transparent: true, opacity: 0.08, side: THREE.DoubleSide }));
-        mainStructure.position.y = 13.5; mainPlantGroup.add(mainStructure);
+        // Pisos (Forma de L azul)
+        const plantFloorMat = new THREE.MeshStandardMaterial({ color: 0x1d4ed8 }); 
+        const receptionFloor = new THREE.Mesh(new THREE.BoxGeometry(70, 2, 45), plantFloorMat);
+        receptionFloor.position.set(10, 1, 37.5); receptionFloor.receiveShadow = true; mainPlantGroup.add(receptionFloor);
+        const storageFloor = new THREE.Mesh(new THREE.BoxGeometry(70, 2, 120), plantFloorMat);
+        storageFloor.position.set(-60, 1, 30); storageFloor.receiveShadow = true; mainPlantGroup.add(storageFloor);
+
+        // Paredes Perimetrales
+        const wallMat = new THREE.MeshStandardMaterial({ color: 0x0ea5e9, transparent: true, opacity: 0.25, side: THREE.DoubleSide });
+        const rWallTop = new THREE.Mesh(new THREE.BoxGeometry(70, 25, 2), wallMat); rWallTop.position.set(10, 13.5, 15);
+        const rWallBot = new THREE.Mesh(new THREE.BoxGeometry(70, 25, 2), wallMat); rWallBot.position.set(10, 13.5, 60);
+        const rWallRight = new THREE.Mesh(new THREE.BoxGeometry(2, 25, 45), wallMat); rWallRight.position.set(45, 13.5, 37.5);
+        mainPlantGroup.add(rWallTop, rWallBot, rWallRight);
+
+        const sWallTop = new THREE.Mesh(new THREE.BoxGeometry(70, 25, 2), wallMat); sWallTop.position.set(-60, 13.5, -30);
+        const sWallBot = new THREE.Mesh(new THREE.BoxGeometry(70, 25, 2), wallMat); sWallBot.position.set(-60, 13.5, 90);
+        const sWallRight1 = new THREE.Mesh(new THREE.BoxGeometry(2, 25, 45), wallMat); sWallRight1.position.set(-25, 13.5, -7.5);
+        const sWallRight2 = new THREE.Mesh(new THREE.BoxGeometry(2, 25, 30), wallMat); sWallRight2.position.set(-25, 13.5, 75);
+        mainPlantGroup.add(sWallTop, sWallBot, sWallRight1, sWallRight2);
+
+        const sWallLeft1 = new THREE.Mesh(new THREE.BoxGeometry(2, 25, 22.5), wallMat); sWallLeft1.position.set(-95, 13.5, -18.75);
+        const sWallLeft2 = new THREE.Mesh(new THREE.BoxGeometry(2, 25, 45), wallMat); sWallLeft2.position.set(-95, 13.5, 30);
+        const sWallLeft3 = new THREE.Mesh(new THREE.BoxGeometry(2, 25, 22.5), wallMat); sWallLeft3.position.set(-95, 13.5, 78.75);
+        const sDintel1 = new THREE.Mesh(new THREE.BoxGeometry(2, 10, 15), wallMat); sDintel1.position.set(-95, 21, 0);
+        const sDintel2 = new THREE.Mesh(new THREE.BoxGeometry(2, 10, 15), wallMat); sDintel2.position.set(-95, 21, 60);
+        mainPlantGroup.add(sWallLeft1, sWallLeft2, sWallLeft3, sDintel1, sDintel2);
 
         const wallX = -25;
-        const divWallMat = new THREE.MeshStandardMaterial({ color: 0x0ea5e9, transparent: true, opacity: 0.35, side: THREE.DoubleSide });
-        const wallR = new THREE.Mesh(new THREE.BoxGeometry(2, 25, 73), divWallMat); wallR.position.set(wallX, 13.5, -13.5); mainPlantGroup.add(wallR);
-        const wallL = new THREE.Mesh(new THREE.BoxGeometry(2, 25, 3), divWallMat); wallL.position.set(wallX, 13.5, 48.5); mainPlantGroup.add(wallL);
-        const wallT = new THREE.Mesh(new THREE.BoxGeometry(2, 15, 24), divWallMat); wallT.position.set(wallX, 18.5, 35); mainPlantGroup.add(wallT);
+        const iWallNorth = new THREE.Mesh(new THREE.BoxGeometry(2, 25, 7.5), wallMat); iWallNorth.position.set(wallX, 13.5, 18.75);
+        const iWallSouth = new THREE.Mesh(new THREE.BoxGeometry(2, 25, 12.5), wallMat); iWallSouth.position.set(wallX, 13.5, 53.75);
+        const iDintel = new THREE.Mesh(new THREE.BoxGeometry(2, 10, 25), wallMat); iDintel.position.set(wallX, 21, 35);
+        mainPlantGroup.add(iWallNorth, iWallSouth, iDintel);
 
-        // Bandas
+
+        // --- ÁREA DE RECEPCIÓN Y BANDAS ---
         const beltMat = new THREE.MeshStandardMaterial({ color: 0x475569, roughness: 0.8 });
         for(let i=-1; i<=1; i++) {
              const belt = new THREE.Mesh(new THREE.BoxGeometry(60, 1, 4), beltMat);
@@ -197,64 +219,102 @@
             antennasArray.push({ mesh: ring, timer: 0, active: false });
         }
 
-        // Hub 2
-        const hub2FrameMat = new THREE.MeshBasicMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.25 });
-        const h2Pillar1 = new THREE.Mesh(new THREE.BoxGeometry(3, 11, 0.5), hub2FrameMat); h2Pillar1.position.set(wallX, 6.5, 23);
-        const h2Pillar2 = new THREE.Mesh(new THREE.BoxGeometry(3, 11, 0.5), hub2FrameMat); h2Pillar2.position.set(wallX, 6.5, 47);
-        const h2Beam = new THREE.Mesh(new THREE.BoxGeometry(3, 0.5, 24.5), hub2FrameMat); h2Beam.position.set(wallX, 11.75, 35);
-        mainPlantGroup.add(h2Pillar1, h2Pillar2, h2Beam);
-        const hub2Device = new THREE.Mesh(new THREE.BoxGeometry(1.5, 4, 2.5), hubMat); hub2Device.position.set(wallX + 1, 8, 21.5); mainPlantGroup.add(hub2Device);
 
-        const qcTunnel = new THREE.Mesh(new THREE.BoxGeometry(8, 7, 24), new THREE.MeshStandardMaterial({color: 0xf59e0b, transparent: true, opacity: 0.2})); qcTunnel.position.set(-10, 4.5, 35); mainPlantGroup.add(qcTunnel);
-        const qcInspector = createHumanoid(0xffff00); qcInspector.position.set(-10, 2, 50); qcInspector.rotation.y = Math.PI; mainPlantGroup.add(qcInspector);
-        const rejectArea = new THREE.Mesh(new THREE.CircleGeometry(5), new THREE.MeshBasicMaterial({color: 0xff0000, transparent: true, opacity: 0.3})); rejectArea.rotation.x = -Math.PI/2; rejectArea.position.set(-15, 2.1, 55); mainPlantGroup.add(rejectArea);
+        // --- NUEVA ÁREA DE CALIDAD (QC) LADO/PARALELA ---
+        const qcAreaGroup = new THREE.Group();
+        // Ubicada paralela a las bandas (Z=12), al lado de la recepción, sin bloquear la puerta
+        qcAreaGroup.position.set(-5, 0, 15); 
+        mainPlantGroup.add(qcAreaGroup);
 
-        // --- SISTEMA MATRICIAL DE ESTANTERÍAS (NUEVO) ---
+        // Suelo distintivo para la estación QC
+        const qcFloor = new THREE.Mesh(new THREE.BoxGeometry(25, 0.5, 12), new THREE.MeshStandardMaterial({ color: 0x334155 }));
+        qcFloor.position.set(0, 2.1, 0);
+        qcAreaGroup.add(qcFloor);
+
+        // Mesa de Calidad
+        const tableTop = new THREE.Mesh(new THREE.BoxGeometry(10, 0.5, 5), new THREE.MeshStandardMaterial({ color: 0xf59e0b }));
+        tableTop.position.set(-2, 4, 0);
+        const legMat = new THREE.MeshStandardMaterial({ color: 0x1e293b });
+        const tLeg1 = new THREE.Mesh(new THREE.BoxGeometry(0.5, 4, 0.5), legMat); tLeg1.position.set(-6.5, 2, -2);
+        const tLeg2 = new THREE.Mesh(new THREE.BoxGeometry(0.5, 4, 0.5), legMat); tLeg2.position.set(2.5, 2, -2);
+        const tLeg3 = new THREE.Mesh(new THREE.BoxGeometry(0.5, 4, 0.5), legMat); tLeg3.position.set(-6.5, 2, 2);
+        const tLeg4 = new THREE.Mesh(new THREE.BoxGeometry(0.5, 4, 0.5), legMat); tLeg4.position.set(2.5, 2, 2);
+        qcAreaGroup.add(tableTop, tLeg1, tLeg2, tLeg3, tLeg4);
+
+        // Inspector de Calidad (Detrás de la mesa)
+        const qcInspector = createHumanoid(0xffff00); 
+        qcInspector.position.set(-2, 2, -4); 
+        qcAreaGroup.add(qcInspector);
+
+        // Zona de Rechazo (Canasta / Círculo rojo)
+        const rejectArea = new THREE.Mesh(new THREE.CircleGeometry(4), new THREE.MeshBasicMaterial({color: 0xff0000, transparent: true, opacity: 0.3})); 
+        rejectArea.rotation.x = -Math.PI/2; 
+        rejectArea.position.set(8, 2.2, 0); // Al lado derecho de la mesa
+        qcAreaGroup.add(rejectArea);
+
+        createLabel("Estación QC / Inspección", new THREE.Vector3(0, 10, 0), qcAreaGroup);
+        createLabel("Rechazo", new THREE.Vector3(8, 5, 0), qcAreaGroup);
+
+
+        // Recepcionista
+        const receiverWorker = createHumanoid(0x38bdf8); receiverWorker.position.set(40, 2, 30); mainPlantGroup.add(receiverWorker);
+
+        // --- PUERTAS Y HUBS RFID ---
+        const hubFrameMat = new THREE.MeshBasicMaterial({ color: 0xf97316, transparent: true, opacity: 0.6 });
+        
+        function createRFIDDoor(x, z, width, labelName) {
+            const group = new THREE.Group();
+            const p1 = new THREE.Mesh(new THREE.BoxGeometry(3, 11, 0.5), hubFrameMat); p1.position.set(x, 6.5, z - width/2);
+            const p2 = new THREE.Mesh(new THREE.BoxGeometry(3, 11, 0.5), hubFrameMat); p2.position.set(x, 6.5, z + width/2);
+            const beam = new THREE.Mesh(new THREE.BoxGeometry(3, 0.5, width + 1), hubFrameMat); beam.position.set(x, 11.75, z);
+            const dev = new THREE.Mesh(new THREE.BoxGeometry(1.5, 4, 2.5), hubMat); dev.position.set(x + (x<0?1:-1), 8, z - width/2 + 1.5);
+            group.add(p1, p2, beam, dev); mainPlantGroup.add(group);
+            createLabel(labelName, new THREE.Vector3(x, 14, z), mainPlantGroup);
+            return { mat: hubFrameMat }; 
+        }
+
+        // Puerta Interna (Hub 2) perpendicular a las bandas
+        const hub2Door = createRFIDDoor(wallX, 35, 24, "Hub 2 (Ingreso)");
+        
+        // Puertas de Salida
+        createRFIDDoor(-95, 0, 14, "Puerta Salida 1");
+        createRFIDDoor(-95, 60, 14, "Puerta Salida 2");
+
+
+        // --- ÁREA DE ALMACENAMIENTO ---
+        const centerStorageMat = new THREE.MeshStandardMaterial({ color: 0xf97316 });
+        const centerStorageFloor = new THREE.Mesh(new THREE.BoxGeometry(30, 0.5, 60), centerStorageMat);
+        centerStorageFloor.position.set(-60, 2.1, 30); mainPlantGroup.add(centerStorageFloor);
+
         function createMatrixRack(x, z, name, labelClass) {
             const rackGroup = new THREE.Group();
             const frameMat = new THREE.MeshStandardMaterial({ color: 0x64748b, metalness: 0.6, roughness: 0.4 });
             const shelfMat = new THREE.MeshStandardMaterial({ color: 0x94a3b8 });
             
-            // Postes verticales (Columnas)
             for(let i=0; i<5; i++) {
-                const post1 = new THREE.Mesh(new THREE.BoxGeometry(0.5, 16, 0.5), frameMat);
-                post1.position.set(-2, 8, -10 + i*5);
-                const post2 = new THREE.Mesh(new THREE.BoxGeometry(0.5, 16, 0.5), frameMat);
-                post2.position.set(2, 8, -10 + i*5);
+                const post1 = new THREE.Mesh(new THREE.BoxGeometry(0.5, 16, 0.5), frameMat); post1.position.set(-2, 8, -10 + i*5);
+                const post2 = new THREE.Mesh(new THREE.BoxGeometry(0.5, 16, 0.5), frameMat); post2.position.set(2, 8, -10 + i*5);
                 rackGroup.add(post1, post2);
             }
-            // Repisas horizontales (Filas/Niveles)
             for(let j=0; j<3; j++) {
-                const shelf = new THREE.Mesh(new THREE.BoxGeometry(5, 0.3, 21), shelfMat);
-                shelf.position.set(0, 3 + j*5, 0); // Niveles en y=3, 8, 13
-                rackGroup.add(shelf);
+                const shelf = new THREE.Mesh(new THREE.BoxGeometry(5, 0.3, 21), shelfMat); shelf.position.set(0, 3 + j*5, 0); rackGroup.add(shelf);
             }
 
-            rackGroup.position.set(x, 0, z);
-            mainPlantGroup.add(rackGroup);
+            rackGroup.position.set(x, 0, z); mainPlantGroup.add(rackGroup);
             createLabel(name, new THREE.Vector3(x, 20, z), mainPlantGroup, labelClass);
             return { x: x, z: z };
         }
 
-        const rackRosas = createMatrixRack(-55, 10, "Rack A: ROSAS (3x4)", "label-rosa");
-        const rackOrquideas = createMatrixRack(-55, -20, "Rack B: ORQUÍDEAS (3x4)", "label-orquidea");
+        const rackRosas = createMatrixRack(-60, 15, "Rack A: ROSAS", "label-rosa");
+        const rackOrquideas = createMatrixRack(-60, 45, "Rack B: ORQUÍDEAS", "label-orquidea");
 
-        // Función para calcular Coordenada Matricial
         function getMatrixTargetPosition(flowerType, slotIndex) {
-            // Matriz 4 columnas x 3 filas
-            const col = slotIndex % 4; // 0 a 3
-            const row = Math.floor(slotIndex / 4); // 0 a 2
-
+            const col = slotIndex % 4; const row = Math.floor(slotIndex / 4); 
             const rack = flowerType === 'Rosa' ? rackRosas : rackOrquideas;
-            // Cálculo exacto del hueco en el rack
-            const targetX = rack.x;
-            const targetY = 4.5 + (row * 5); // Altura de repisa + mitad de la caja
-            const targetZ = rack.z - 7.5 + (col * 5); // Distribución a lo largo de Z
-
+            const targetX = rack.x; const targetY = 4.5 + (row * 5); const targetZ = rack.z - 7.5 + (col * 5); 
             return new THREE.Vector3(targetX, targetY, targetZ);
         }
 
-        const receiverWorker = createHumanoid(0x38bdf8); receiverWorker.position.set(40, 2, 30); mainPlantGroup.add(receiverWorker);
 
         // --- FINCAS FALCOM ---
         const falcomGroup = new THREE.Group();
@@ -276,7 +336,6 @@
         let simState = 0; let timer = 0; let boxesInTruck = 0;
         const expectedBoxes = 12; const rejectionIndex = 3; 
         
-        // Datos del Lote y Clasificación
         let batchData = [];
         let matrixSlotsUsed = { 'Rosa': 0, 'Orquidea': 0 };
         let inventory = { 'Rosa': 0, 'Orquidea': 0 };
@@ -300,7 +359,6 @@
         const uiInvRosas = document.getElementById('invRosas');
         const uiInvOrquideas = document.getElementById('invOrquideas');
 
-        // Controles de UI
         const btnPlay = document.getElementById('btnPlayPause');
         const btnReset = document.getElementById('btnReset');
         const speedBtns = [document.getElementById('btnSpeed1'), document.getElementById('btnSpeed2'), document.getElementById('btnSpeed4')];
@@ -345,17 +403,15 @@
             receiverWorker.position.set(40, 2, 30);
             isPaused = false; btnPlay.textContent = "⏸️ Pausar"; btnPlay.style.background = "#0ea5e9";
             
-            generateBatch(); // Generar nuevo lote
+            generateBatch(); 
         }
 
-        // Crear modelo de caja con identificador visual de tipo de flor
         function createBoxMesh(flowerType) {
              const box = new THREE.Mesh(new THREE.BoxGeometry(2.8, 2.8, 2.8), new THREE.MeshStandardMaterial({ color: 0xca8a04 }));
              box.castShadow = true;
              const rfidTag = new THREE.Mesh(new THREE.PlaneGeometry(1.2, 1.2), new THREE.MeshBasicMaterial({ color: 0xffffff }));
              rfidTag.position.set(0, 1.41, 0); rfidTag.rotation.x = -Math.PI/2; box.add(rfidTag);
              
-             // Banda de color identificadora
              const bandColor = flowerType === 'Rosa' ? 0xf43f5e : 0xa855f7;
              const band = new THREE.Mesh(new THREE.BoxGeometry(2.9, 0.6, 2.9), new THREE.MeshBasicMaterial({ color: bandColor }));
              box.add(band);
@@ -382,7 +438,7 @@
         }
 
         const clock = new THREE.Clock();
-        generateBatch(); // Generar el primer lote
+        generateBatch(); 
 
         function animate() {
             requestAnimationFrame(animate);
@@ -393,7 +449,7 @@
                 timer += delta;
 
                 switch(simState) {
-                    case 0: // Producción
+                    case 0: 
                         uiPhase.textContent = "1. Origen: Producción y Carga";
                         if (timer > 0.6 && boxesInTruck < expectedBoxes) { spawnBoxAtFalcom(); timer = 0; }
                         for (let i = boxesFalcom.length - 1; i >= 0; i--) {
@@ -407,14 +463,14 @@
                         if (boxesInTruck >= expectedBoxes && boxesFalcom.length === 0) { simState = 1; timer = 0; truck.rotation.y = Math.PI; }
                         break;
 
-                    case 1: // Viaje
+                    case 1: 
                         uiPhase.textContent = "2. Logística: Transporte a Planta";
                         let travelProgress = Math.min(timer / 3, 1);
                         truck.position.lerpVectors(posFalcom, posMain, travelProgress);
                         if (travelProgress >= 1) { simState = 2; timer = 0; truck.rotation.y = Math.PI / 2; }
                         break;
 
-                    case 2: // Recepción
+                    case 2: 
                         uiPhase.textContent = "3. Recepción: Validación Exterior";
                         if (timer < 1) receiverWorker.position.lerp(new THREE.Vector3(45, 2, 38), delta * 2);
                         if (timer > 1 && timer < 1.1) { tabletUI.style.display = 'block'; uiScanned.textContent = "0"; uiMatch.className = "status-loading"; uiMatch.textContent = "Escaneando RFID..."; }
@@ -423,7 +479,7 @@
                         if (timer > 5) { tabletUI.style.display = 'none'; simState = 3; timer = 0; receiverWorker.position.set(40, 2, 30); }
                         break;
 
-                    case 3: // Planta: Descarga, Hubs y QC
+                    case 3: 
                         uiPhase.textContent = "4. Planta: Enrutamiento y Calidad";
                         if(timer > 1.0 && processedInPlantCount < expectedBoxes) { spawnBoxFromTruckToBelt(processedInPlantCount); processedInPlantCount++; timer = 0; }
 
@@ -453,19 +509,19 @@
                                         b.state = 'approved'; 
                                         b.mesh.material.color.setHex(0x4ade80); 
                                         
-                                        // ASIGNACIÓN MATRICIAL DINÁMICA (NUEVO)
                                         if(!b.targetAssigned) {
                                             b.targetShelfPos = getMatrixTargetPosition(b.type, matrixSlotsUsed[b.type]);
-                                            matrixSlotsUsed[b.type]++; // Consumir coordenada
+                                            matrixSlotsUsed[b.type]++; 
                                             b.targetAssigned = true;
                                         }
                                     }
                                 }
                             } else if (b.state === 'rejected') {
-                                b.mesh.position.lerp(new THREE.Vector3(-15, 2.5, 55), delta * 2);
+                                // Vuela a la nueva zona de rechazo en la plataforma QC
+                                b.mesh.position.lerp(new THREE.Vector3(3, 2.5, 15), delta * 2);
                             } else if (b.state === 'approved') {
                                  b.mesh.position.x -= delta * 15;
-                                 b.mesh.material.color.lerp(new THREE.Color(0xca8a04), delta*2); // Vuelve al color base de caja
+                                 b.mesh.material.color.lerp(new THREE.Color(0xca8a04), delta*2); 
                                  
                                  if (!b.hub2Scanned && b.mesh.position.x <= wallX) {
                                      b.hub2Scanned = true; hub2ScannedCount++; uiHub2Count.textContent = hub2ScannedCount;
@@ -486,8 +542,8 @@
                         });
 
                         if (hub2Active) {
-                            hub2Timer += delta; hub2FrameMat.color.setHex(0x4ade80); hub2FrameMat.opacity = Math.max(0.1, 0.8 - (hub2Timer * 1.5));
-                            if (hub2Timer > 0.5) { hub2Active = false; hub2FrameMat.color.setHex(0x38bdf8); hub2FrameMat.opacity = 0.25; }
+                            hub2Timer += delta; hubFrameMat.color.setHex(0x4ade80); hubFrameMat.opacity = Math.max(0.2, 1.0 - (hub2Timer * 1.5));
+                            if (hub2Timer > 0.5) { hub2Active = false; hubFrameMat.color.setHex(0xf97316); hubFrameMat.opacity = 0.6; }
                         }
 
                         if(processedInPlantCount === expectedBoxes && boxesPlant.every(b => b.state === 'moving_to_shelf' || b.state === 'rejected')) {
@@ -495,20 +551,18 @@
                         }
                         break;
 
-                    case 4: // Almacenamiento Matricial
+                    case 4: 
                         uiPhase.textContent = "5. Planta: Clasificación en Matriz (A/B)";
                         let allStored = true;
                         boxesPlant.forEach(b => {
                             if(b.state === 'moving_to_shelf') {
                                 allStored = false;
-                                b.mesh.position.lerp(b.targetShelfPos, delta * 4); // Vuelo rápido al hueco
+                                b.mesh.position.lerp(b.targetShelfPos, delta * 4); 
                                 if(b.mesh.position.distanceTo(b.targetShelfPos) < 0.2) {
                                     b.state = 'finished_storage'; 
-                                    // Asegurar alineación exacta
                                     b.mesh.position.copy(b.targetShelfPos); 
                                     completedBoxes += 0.25; 
                                     
-                                    // Sumar al inventario final
                                     inventory[b.type]++;
                                     uiInvRosas.textContent = inventory['Rosa'];
                                     uiInvOrquideas.textContent = inventory['Orquidea'];
@@ -518,7 +572,7 @@
                         if(allStored && timer > 3) { simState = 5; timer = 0; }
                         break;
 
-                    case 5: // Reset Automático
+                    case 5: 
                         uiPhase.textContent = "Lote Finalizado. Reiniciando...";
                         if(timer > 3) { resetSimulation(); }
                         break;
